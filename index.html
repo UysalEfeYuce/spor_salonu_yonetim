@@ -12,156 +12,430 @@
       <span class="brand-mark">G</span>
       <span>Gym Yönetim Sistemi</span>
     </a>
-    <nav class="home-nav">
-      <a href="#uye">Üye</a>
-      <a href="#hoca">Hoca</a>
-    </nav>
+    <button class="nav-button" id="open-login-button" type="button">Giriş Yap</button>
   </header>
 
   <main class="portal-shell">
-    <section class="portal-hero">
-      <div class="welcome-panel" id="login-placeholder">
+    <section class="welcome-screen" id="welcome-screen">
+      <div class="welcome-inner">
         <p class="eyebrow">Hoş Geldiniz</p>
-        <h1>Panelini görmek için sisteme giriş yap</h1>
-        <p>Üye veya hoca hesabınla giriş yaptıktan sonra sana ait bilgiler bu alanda gösterilir.</p>
-        <div class="welcome-steps">
-          <span>1. Kullanıcı tipini seç</span>
-          <span>2. Bilgilerini gir</span>
-          <span>3. Paneline ulaş</span>
+        <h1>Spor salonu paneline giriş yap</h1>
+        <p>Üye kendi üyelik ve antrenman bilgilerini, hoca kendisine atanmış üyeleri görür. Admin yönetim paneline geçer.</p>
+        <button class="primary-button hero-cta" id="hero-login-button" type="button">
+          <span>Giriş Yap</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/>
+            <path d="m13 5 7 7-7 7"/>
+          </svg>
+        </button>
+
+        <div class="welcome-features">
+          <div class="welcome-feature">
+            <span class="feature-icon">01</span>
+            <div>
+              <strong>Üye Paneli</strong>
+              <small>Üyelik, ölçüm ve antrenman programı.</small>
+            </div>
+          </div>
+          <div class="welcome-feature">
+            <span class="feature-icon">02</span>
+            <div>
+              <strong>Hoca Paneli</strong>
+              <small>Atanmış üyeler ve günlük dersler.</small>
+            </div>
+          </div>
+          <div class="welcome-feature">
+            <span class="feature-icon">03</span>
+            <div>
+              <strong>Admin Paneli</strong>
+              <small>Üye, finans, stok ve raporlar.</small>
+            </div>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="member-panel is-hidden" id="member-panel">
-        <div class="member-top">
+    <section class="member-panel dashboard-panel is-hidden" id="member-panel">
+      <div class="member-top">
+        <div>
+          <p class="eyebrow">Üye POV</p>
+          <h1>Merhaba, <span id="member-name">Üye</span></h1>
+          <p>Sahip olduğun tüm üyelik, ölçüm, program ve alışveriş bilgileri aşağıda sıralı görünür.</p>
+        </div>
+        <span class="avatar large" id="member-avatar">Ü</span>
+      </div>
+
+      <div class="member-summary">
+        <article class="summary-card">
+          <span>Üyelik Durumu</span>
+          <strong class="status ok inline">Aktif</strong>
+          <small>uyelik_takibi tablosu</small>
+        </article>
+        <article class="summary-card success">
+          <span>Kalan Gün</span>
+          <strong id="membership-remaining">-</strong>
+          <small>bitiş: <span id="membership-end-inline">-</span></small>
+        </article>
+        <article class="summary-card">
+          <span>Aktif Program</span>
+          <strong id="program-name">-</strong>
+          <small id="program-coach">hoca: -</small>
+        </article>
+        <article class="summary-card">
+          <span>Toplam Harcama</span>
+          <strong id="total-spending">-</strong>
+          <small>satislar tablosu</small>
+        </article>
+      </div>
+
+      <article class="member-section">
+        <div class="section-head compact">
           <div>
-            <p class="eyebrow">Üye Ekranı</p>
-            <h1>Merhaba, <span id="member-name">Üye</span></h1>
-            <p>Üyelik durumunu, ölçümlerini ve antrenman programını buradan takip edebilirsin.</p>
+            <h2>01 — Üyelik Bilgilerim</h2>
+            <p><code>uyeler</code> ve <code>uyelik_takibi</code> tablolarından özet.</p>
           </div>
-          <span class="avatar large" id="member-avatar">Ü</span>
+          <span class="status ok">Aktif</span>
         </div>
 
-        <div class="member-stats">
-          <article>
-            <span>Üyelik Bitişi</span>
+        <div class="info-grid">
+          <div>
+            <span>Üye No</span>
+            <strong id="member-id">-</strong>
+          </div>
+          <div>
+            <span>Ad Soyad</span>
+            <strong id="member-fullname">-</strong>
+          </div>
+          <div>
+            <span>Telefon</span>
+            <strong id="member-phone">-</strong>
+          </div>
+          <div>
+            <span>Kayıt Tarihi</span>
+            <strong id="member-registered">-</strong>
+          </div>
+          <div>
+            <span>Üyelik Paketi</span>
+            <strong id="membership-package">-</strong>
+          </div>
+          <div>
+            <span>Bitiş Tarihi</span>
             <strong id="membership-end">-</strong>
-          </article>
-          <article>
-            <span>Son Kilo</span>
-            <strong id="last-weight">-</strong>
-          </article>
-          <article>
-            <span>Program</span>
-            <strong id="program-days">-</strong>
-          </article>
+          </div>
+        </div>
+      </article>
+
+      <article class="member-section">
+        <div class="section-head compact">
+          <div>
+            <h2>02 — Vücut Ölçülerim</h2>
+            <p><code>vucut_olculeri</code> tablosundan son 5 ölçüm.</p>
+          </div>
+          <button class="outline-button small" type="button">+ Yeni Ölçüm</button>
         </div>
 
-        <div class="today-program">
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ölçüm Tarihi</th>
+                <th>Kilo</th>
+                <th>Yağ Oranı</th>
+                <th>Bel Çevresi</th>
+                <th>Göğüs</th>
+                <th>Kol</th>
+                <th>Trend</th>
+              </tr>
+            </thead>
+            <tbody id="measurements-body">
+              <tr>
+                <td>05.05.2026</td>
+                <td><strong>68.0 kg</strong></td>
+                <td>15%</td>
+                <td>78 cm</td>
+                <td>102 cm</td>
+                <td>36 cm</td>
+                <td><span class="trend down">▼ 0.5</span></td>
+              </tr>
+              <tr>
+                <td>28.04.2026</td>
+                <td>68.5 kg</td>
+                <td>15.4%</td>
+                <td>79 cm</td>
+                <td>101 cm</td>
+                <td>36 cm</td>
+                <td><span class="trend down">▼ 0.7</span></td>
+              </tr>
+              <tr>
+                <td>21.04.2026</td>
+                <td>69.2 kg</td>
+                <td>16%</td>
+                <td>80 cm</td>
+                <td>100 cm</td>
+                <td>35 cm</td>
+                <td><span class="trend down">▼ 0.4</span></td>
+              </tr>
+              <tr>
+                <td>14.04.2026</td>
+                <td>69.6 kg</td>
+                <td>16.3%</td>
+                <td>80 cm</td>
+                <td>100 cm</td>
+                <td>35 cm</td>
+                <td><span class="trend up">▲ 0.2</span></td>
+              </tr>
+              <tr>
+                <td>07.04.2026</td>
+                <td>69.4 kg</td>
+                <td>16.5%</td>
+                <td>81 cm</td>
+                <td>99 cm</td>
+                <td>35 cm</td>
+                <td><span class="trend neutral">—</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="member-section">
+        <div class="section-head compact">
           <div>
-            <h2>Bugünkü Program</h2>
-            <p id="today-program-text">Program bilgisi yüklenmedi.</p>
+            <h2>03 — Antrenman Programım</h2>
+            <p><code>antrenman_programi</code> tablosu — Hoca: <strong id="program-coach-name">-</strong></p>
           </div>
-          <div class="program-actions">
-            <button class="outline-button">Detayları Gör</button>
-            <button class="outline-button" id="logout-button" type="button">Çıkış Yap</button>
+          <span class="status ok">Hipertrofi · 4 Gün</span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Gün</th>
+                <th>Hedef Bölge</th>
+                <th>Egzersizler</th>
+                <th>Set x Tekrar</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="today-row">
+                <td><strong>Pazartesi</strong> <span class="badge">Bugün</span></td>
+                <td>Göğüs · Omuz · Triceps</td>
+                <td>Bench, Incline DB, Lateral Raise, Skull Crusher</td>
+                <td>4 x 8-10</td>
+                <td><span class="status ok">Yapılacak</span></td>
+              </tr>
+              <tr>
+                <td>Salı</td>
+                <td>Sırt · Biceps</td>
+                <td>Pull-up, Barbell Row, Lat Pulldown, Curl</td>
+                <td>4 x 8-12</td>
+                <td><span class="status muted">Planlı</span></td>
+              </tr>
+              <tr>
+                <td>Çarşamba</td>
+                <td>Dinlenme</td>
+                <td>Hafif kardiyo (30 dk yürüyüş)</td>
+                <td>—</td>
+                <td><span class="status muted">Off</span></td>
+              </tr>
+              <tr>
+                <td>Perşembe</td>
+                <td>Bacak · Kalça</td>
+                <td>Squat, Romanian Deadlift, Leg Press, Calf Raise</td>
+                <td>4 x 10</td>
+                <td><span class="status muted">Planlı</span></td>
+              </tr>
+              <tr>
+                <td>Cuma</td>
+                <td>Omuz · Karın</td>
+                <td>OHP, Lateral Raise, Plank, Hanging Leg Raise</td>
+                <td>4 x 10-15</td>
+                <td><span class="status muted">Planlı</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="member-section">
+        <div class="section-head compact">
+          <div>
+            <h2>04 — Alışverişlerim</h2>
+            <p><code>satislar</code> tablosu — sana ait satış kayıtları.</p>
           </div>
+          <span class="status muted">Son 30 gün</span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>Ürün</th>
+                <th>Kategori</th>
+                <th>Adet</th>
+                <th>Birim Fiyat</th>
+                <th>Toplam</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>03.05.2026</td>
+                <td>Whey Protein</td>
+                <td>Supplement</td>
+                <td>1</td>
+                <td>1.250 TL</td>
+                <td><strong>1.250 TL</strong></td>
+              </tr>
+              <tr>
+                <td>21.04.2026</td>
+                <td>Creatine</td>
+                <td>Supplement</td>
+                <td>1</td>
+                <td>650 TL</td>
+                <td><strong>650 TL</strong></td>
+              </tr>
+              <tr>
+                <td>21.04.2026</td>
+                <td>Shaker</td>
+                <td>Aksesuar</td>
+                <td>1</td>
+                <td>180 TL</td>
+                <td><strong>180 TL</strong></td>
+              </tr>
+              <tr>
+                <td>02.04.2026</td>
+                <td>BCAA</td>
+                <td>Supplement</td>
+                <td>1</td>
+                <td>480 TL</td>
+                <td><strong>480 TL</strong></td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="5">Toplam Harcama</td>
+                <td><strong>2.560 TL</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </article>
+
+      <button class="outline-button logout-button" type="button">Çıkış Yap</button>
+    </section>
+
+    <section class="coach-panel dashboard-panel is-hidden" id="coach-panel">
+      <div class="member-top">
+        <div>
+          <p class="eyebrow">Hoca POV</p>
+          <h1>Merhaba, Burak Koç</h1>
+          <p>Atanmış üyelerin, bugünkü derslerin ve yazman gereken programlar burada görünür.</p>
+        </div>
+        <span class="avatar large">BK</span>
+      </div>
+
+      <div class="coach-grid">
+        <article>
+          <h2>Atanmış Üyeler</h2>
+          <ul>
+            <li>Uysal Efe Yüce - hipertrofi programı</li>
+            <li>Ayşe Kaya - kilo verme programı</li>
+            <li>Gürkan Işık - kuvvet programı</li>
+          </ul>
+        </article>
+
+        <article>
+          <h2>Bugünkü Dersler</h2>
+          <ul>
+            <li>10:00 - Uysal Efe Yüce</li>
+            <li>14:30 - Ayşe Kaya</li>
+            <li>18:00 - Grup antrenmanı</li>
+          </ul>
+        </article>
+
+        <article>
+          <h2>Program Yaz</h2>
+          <p>Seçili üyeye yeni antrenman programı atanır.</p>
+          <button class="outline-button" type="button">Yeni Program</button>
+        </article>
+
+        <article>
+          <h2>Gelişim Takibi</h2>
+          <p>Son ölçüm giren üye: <strong>Uysal Efe Yüce</strong></p>
+          <p>Son kilo: <strong>68 kg</strong></p>
+        </article>
+      </div>
+
+      <button class="outline-button logout-button" type="button">Çıkış Yap</button>
+    </section>
+  </main>
+
+  <div class="modal-backdrop is-hidden" id="login-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close" type="button" aria-label="Kapat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18"/>
+          <path d="m6 6 12 12"/>
+        </svg>
+      </button>
+
+      <div class="modal-step" data-step="role">
+        <p class="eyebrow">Adım 1 / 2</p>
+        <h2 id="modal-title">Kim olarak giriş yapıyorsun?</h2>
+        <p class="modal-sub">Rolünü seç; sadece sana ait panel açılır.</p>
+
+        <div class="role-choice-grid">
+          <button class="role-card" type="button" data-role="member">
+            <span class="role-badge">Üye</span>
+            <strong>Üye Paneli</strong>
+            <small>Üyelik, ölçüm, program ve alışveriş bilgileri.</small>
+          </button>
+
+          <button class="role-card" type="button" data-role="coach">
+            <span class="role-badge">Hoca</span>
+            <strong>Hoca Paneli</strong>
+            <small>Atanmış üyeler, günlük dersler ve program yazma.</small>
+          </button>
+
+          <a class="role-card admin-role" href="admin.html">
+            <span class="role-badge">Admin</span>
+            <strong>Admin Paneli</strong>
+            <small>Üye, finans, stok, personel ve rapor yönetimi.</small>
+          </a>
         </div>
       </div>
 
-      <aside class="login-panel">
-        <h2>Sisteme Giriş</h2>
-        <p>İşlem yapmak için kullanıcı tipini seç.</p>
+      <div class="modal-step is-hidden" data-step="login">
+        <button class="modal-back" id="modal-back" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          <span>Rol seçimine dön</span>
+        </button>
 
-        <div class="role-tabs">
-          <button class="active" type="button" data-role="Üye">Üye</button>
-          <button type="button" data-role="Hoca">Hoca</button>
-          <a href="admin.html">Admin</a>
-        </div>
+        <p class="eyebrow">Adım 2 / 2</p>
+        <h2 id="login-title">Üye Girişi</h2>
+        <p class="modal-sub">Kullanıcı bilgilerini girerek panele eriş.</p>
 
-        <form class="login-form" id="login-form">
+        <form class="login-form role-login-form" id="login-form">
           <label>
             Telefon veya Kullanıcı Adı
-            <input type="text" name="username" value="0544 222 33 44">
+            <input type="text" name="username" value="0544 222 33 44" autocomplete="username">
           </label>
           <label>
             Şifre
-            <input type="password" name="password" value="123456">
+            <input type="password" name="password" value="123456" autocomplete="current-password">
           </label>
           <p class="form-message" id="login-message"></p>
-          <button type="submit" class="primary-button" id="login-button">Giriş Yap</button>
+          <button type="submit" class="primary-button full">Panele Gir</button>
         </form>
-      </aside>
-    </section>
-
-    <section class="quick-section">
-      <div class="section-head">
-        <div>
-          <h2>Üye İşlemleri</h2>
-          <p>Üye sadece kendi üyelik, ölçüm ve antrenman bilgilerini görür.</p>
-        </div>
       </div>
+    </div>
+  </div>
 
-      <div class="user-action-grid">
-        <article id="uye" class="user-action-card">
-          <span class="module-number">Üye</span>
-          <h3>Üye Paneli</h3>
-          <p>Üyelik süresi, ölçüm geçmişi, antrenman programı ve supplement alışveriş geçmişi.</p>
-          <div class="card-actions">
-            <button class="outline-button">Ölçümlerim</button>
-            <button class="outline-button">Programım</button>
-          </div>
-        </article>
-
-        <article id="hoca" class="user-action-card">
-          <span class="module-number">Hoca</span>
-          <h3>Hoca Paneli</h3>
-          <p>Atanmış üyeler, program yazma, gelişim takibi ve günlük antrenman listesi.</p>
-          <div class="card-actions">
-            <button class="outline-button">Üyelerim</button>
-            <button class="outline-button">Program Yaz</button>
-          </div>
-        </article>
-
-        <article class="user-action-card">
-          <span class="module-number">Supplement</span>
-          <h3>Alışveriş Geçmişi</h3>
-          <p>Üyenin daha önce aldığı ürünler ve son supplement alışverişleri burada görünür.</p>
-          <div class="card-actions">
-            <button class="outline-button">Geçmişim</button>
-            <button class="outline-button">Ürünler</button>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="quick-section">
-      <div class="section-head">
-        <div>
-          <h2>Kişisel Özet</h2>
-          <p>Bu bilgiler sadece giriş yapan üyeye ait olacak şekilde gösterilir.</p>
-        </div>
-      </div>
-
-      <div class="public-summary">
-        <article>
-          <span>Kalan Üyelik</span>
-          <strong>1 Gün</strong>
-        </article>
-        <article>
-          <span>Son Ölçüm</span>
-          <strong>68 kg</strong>
-        </article>
-        <article>
-          <span>Son Program</span>
-          <strong>Yok</strong>
-        </article>
-        <article>
-          <span>Son Alışveriş</span>
-          <strong>-</strong>
-        </article>
-      </div>
-    </section>
-  </main>
   <script src="app.js"></script>
 </body>
 </html>
