@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym Admin Paneli | Yönetim</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">G</span>
+      <div>
+        <strong>GymAdmin</strong>
+        <small>Yönetim Paneli</small>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a href="#dashboard" class="active">Dashboard</a>
+      <a href="#uyeler">Üye Yönetimi</a>
+      <a href="#finans">Üyelik & Finans</a>
+      <a href="#envanter">Envanter</a>
+      <a href="#antrenman">Antrenman</a>
+    </nav>
+  </aside>
+
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Admin Paneli</p>
+        <h1>Fitness Merkezi Kontrol Ekranı</h1>
+      </div>
+      <div class="topbar-actions">
+        <a class="outline-button" href="index.html">Ana Sayfa</a>
+        <div class="admin-profile">
+          <span>Admin</span>
+          <div class="avatar">A</div>
+        </div>
+      </div>
+    </header>
+
+    <section id="dashboard" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Hızlı Özet</h2>
+          <p>Üyeler, satışlar, stok ve antrenman işlemleri tek ekranda.</p>
+        </div>
+        <button class="outline-button">Rapor Al</button>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="summary-card">
+          <span>Toplam Üye</span>
+          <strong>150</strong>
+          <small>uyeler tablosu</small>
+        </div>
+        <div class="summary-card success">
+          <span>Aktif Üyelik</span>
+          <strong>120</strong>
+          <small>uyelik_takibi tablosu</small>
+        </div>
+        <div class="summary-card">
+          <span>Bugünkü Ciro</span>
+          <strong>4.500 TL</strong>
+          <small>satislar tablosu</small>
+        </div>
+        <div class="summary-card danger">
+          <span>Stok Uyarı</span>
+          <strong>3 Ürün</strong>
+          <small>stok miktarı 5'in altında</small>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <a class="action-button" href="#yeni-uye">+ Yeni Üye Kaydı</a>
+        <a class="action-button" href="#yeni-satis">+ Yeni Satış Yap</a>
+        <a class="action-button" href="#program-yaz">+ Program Yaz</a>
+        <a class="action-button muted" href="#raporlar">Rapor Al</a>
+      </div>
+    </section>
+
+    <section class="module-grid">
+      <article id="uyeler" class="module-card">
+        <h3>Üye Yönetim Modülü</h3>
+        <p>Üye kaydı, silme işlemleri ve gelişim takibi.</p>
+        <div class="table-tags">
+          <span>uyeler</span>
+          <span>vucut_olculeri</span>
+        </div>
+        <a class="small-link" href="#uye-detay">Üye Detayına Git</a>
+      </article>
+
+      <article id="finans" class="module-card">
+        <h3>Üyelik & Finans Modülü</h3>
+        <p>Süresi biten üyelikler ve supplement satış cirosu.</p>
+        <div class="table-tags">
+          <span>uyelik_takibi</span>
+          <span>satislar</span>
+        </div>
+      </article>
+
+      <article id="envanter" class="module-card">
+        <h3>Envanter Modülü</h3>
+        <p>Stok takibi, stok uyarısı ve ürün fiyat güncelleme.</p>
+        <div class="table-tags">
+          <span>urunler</span>
+        </div>
+        <a class="small-link" href="#envanter-panel">Stok Yönetimine Git</a>
+      </article>
+
+      <article id="antrenman" class="module-card">
+        <h3>Antrenman Modülü</h3>
+        <p>Hoca, üye ve program ilişkisini yönetme.</p>
+        <div class="table-tags">
+          <span>personel</span>
+          <span>antrenman_programi</span>
+        </div>
+      </article>
+    </section>
+
+    <section id="yeni-uye" class="section split-layout">
+      <div>
+        <div class="section-head compact">
+          <div>
+            <h2>Yeni Üye Kaydı</h2>
+            <p>uyeler tablosuna temel üye bilgileri eklenir.</p>
+          </div>
+        </div>
+
+        <form class="form-card">
+          <label>
+            Ad Soyad
+            <input type="text" value="Yeni Üye">
+          </label>
+          <label>
+            Telefon
+            <input type="tel" value="05xx xxx xx xx">
+          </label>
+          <label>
+            Başlangıç Tarihi
+            <input type="date" value="2026-05-03">
+          </label>
+          <button type="button" class="primary-button">Üyeyi Kaydet</button>
+        </form>
+      </div>
+
+      <div class="flow-panel">
+        <h3>Üye Yönetimi İşlemleri</h3>
+        <ol>
+          <li><code>INSERT INTO uyeler</code> ile yeni üye oluşturulur.</li>
+          <li><code>SELECT * FROM uyeler</code> ile liste ekranı güncellenir.</li>
+          <li>Ölçüm girildiğinde <code>vucut_olculeri</code> tablosuna kayıt eklenir.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="yeni-satis" class="section split-layout">
+      <div>
+        <div class="section-head compact">
+          <div>
+            <h2>Yeni Satış</h2>
+            <p>satislar tablosuna kayıt eklenir, urunler stok miktarı düşürülür.</p>
+          </div>
+        </div>
+
+        <form class="form-card">
+          <label>
+            Üye Seç
+            <select>
+              <option>Ahmet Yılmaz</option>
+              <option>Elif Kaya</option>
+              <option>Mehmet Demir</option>
+            </select>
+          </label>
+
+          <label>
+            Ürün Seç
+            <select>
+              <option>Whey Protein - 1.250 TL</option>
+              <option>Creatine - 650 TL</option>
+              <option>BCAA - 480 TL</option>
+            </select>
+          </label>
+
+          <label>
+            Adet
+            <input type="number" value="1" min="1">
+          </label>
+
+          <button type="button" class="primary-button">Satışı Kaydet</button>
+        </form>
+      </div>
+
+      <div class="flow-panel">
+        <h3>Arka Plandaki Veri Akışı</h3>
+        <ol>
+          <li><code>INSERT INTO satislar</code> ile satış kaydı açılır.</li>
+          <li><code>UPDATE urunler SET stokmiktari</code> ile satılan adet düşülür.</li>
+          <li>Stok 5'in altına düşerse envanter ekranında kırmızı uyarı görünür.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="uye-detay" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Üye Detay Sayfası</h2>
+          <p>uyeler, vucut_olculeri ve uyelik_takibi tablolarından özet görünüm.</p>
+        </div>
+        <button class="outline-button">Üyeliği Uzat</button>
+      </div>
+
+      <div class="detail-grid">
+        <article class="profile-panel">
+          <span class="avatar large">AY</span>
+          <h3>Ahmet Yılmaz</h3>
+          <p>Telefon: 0532 111 22 33</p>
+          <p>Durum: Aktif Üye</p>
+        </article>
+
+        <article class="chart-panel">
+          <h3>Son 5 Ölçüm</h3>
+          <div class="mini-chart" aria-label="Kilo ve yağ oranı grafiği">
+            <span style="height: 72%"></span>
+            <span style="height: 64%"></span>
+            <span style="height: 58%"></span>
+            <span style="height: 54%"></span>
+            <span style="height: 48%"></span>
+          </div>
+          <div class="chart-legend">
+            <span>Kilo</span>
+            <span>Yağ oranı düşüş trendi</span>
+          </div>
+        </article>
+
+        <article class="membership-panel">
+          <h3>Mevcut Üyelik</h3>
+          <strong>31.05.2026</strong>
+          <p>Bitiş tarihi uyelik_takibi tablosundan gelir.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="envanter-panel" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Stok Yönetimi</h2>
+          <p>urunler tablosunun tamamı listelenir. Stok 5'in altındaysa satır kırmızı işaretlenir.</p>
+        </div>
+        <button class="outline-button">+ Yeni Ürün</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ürün ID</th>
+              <th>Ürün Adı</th>
+              <th>Kategori</th>
+              <th>Fiyat</th>
+              <th>Stok Miktarı</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>Whey Protein</td>
+              <td>Supplement</td>
+              <td>1.250 TL</td>
+              <td>18</td>
+              <td><span class="status ok">Yeterli</span></td>
+            </tr>
+            <tr class="low-stock">
+              <td>2</td>
+              <td>Creatine</td>
+              <td>Supplement</td>
+              <td>650 TL</td>
+              <td>4</td>
+              <td><span class="status danger">Azaldı</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Shaker</td>
+              <td>Aksesuar</td>
+              <td>180 TL</td>
+              <td>12</td>
+              <td><span class="status ok">Yeterli</span></td>
+            </tr>
+            <tr class="low-stock">
+              <td>4</td>
+              <td>BCAA</td>
+              <td>Supplement</td>
+              <td>480 TL</td>
+              <td>3</td>
+              <td><span class="status danger">Azaldı</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="raporlar" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Rapor Ekranı</h2>
+          <p>Satış, üyelik ve stok verileri yönetici özeti olarak gösterilir.</p>
+        </div>
+        <button class="outline-button">PDF Hazırla</button>
+      </div>
+
+      <div class="report-grid">
+        <article class="report-item">
+          <span>Bugünkü Satış</span>
+          <strong>4.500 TL</strong>
+          <small>satislar tablosu</small>
+        </article>
+        <article class="report-item">
+          <span>Süresi Biten Üyelik</span>
+          <strong>8</strong>
+          <small>uyelik_takibi tablosu</small>
+        </article>
+        <article class="report-item">
+          <span>Kritik Stok</span>
+          <strong>3</strong>
+          <small>urunler tablosu</small>
+        </article>
+      </div>
+    </section>
+
+    <section id="program-yaz" class="section split-layout">
+      <div>
+        <div class="section-head compact">
+          <div>
+            <h2>Program Yaz</h2>
+            <p>personel ve antrenman_programi tabloları üzerinden hoca-üye eşleşmesi.</p>
+          </div>
+        </div>
+
+        <form class="form-card">
+          <label>
+            Hoca
+            <select>
+              <option>Burak Koç</option>
+              <option>Selin Arslan</option>
+            </select>
+          </label>
+          <label>
+            Üye
+            <select>
+              <option>Ahmet Yılmaz</option>
+              <option>Elif Kaya</option>
+            </select>
+          </label>
+          <label>
+            Program Tipi
+            <input type="text" value="Hipertrofi - 4 Gün">
+          </label>
+          <button type="button" class="primary-button">Programı Kaydet</button>
+        </form>
+      </div>
+
+      <div class="code-panel">
+        <h3>CRUD Mantığı</h3>
+        <pre><code>SELECT * FROM uyeler;
+INSERT INTO urunler (...);
+UPDATE uyelik_takibi SET ... WHERE id = x;
+DELETE FROM personel WHERE id = x;</code></pre>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gym Yönetim Sistemi | Giriş</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="home-page">
+  <header class="home-header">
+    <a class="home-logo" href="index.html">
+      <span class="brand-mark">G</span>
+      <span>Gym Yönetim Sistemi</span>
+    </a>
+    <nav class="home-nav">
+      <a href="#uye">Üye</a>
+      <a href="#hoca">Hoca</a>
+    </nav>
+  </header>
+
+  <main class="portal-shell">
+    <section class="portal-hero">
+      <div class="welcome-panel" id="login-placeholder">
+        <p class="eyebrow">Hoş Geldiniz</p>
+        <h1>Panelini görmek için sisteme giriş yap</h1>
+        <p>Üye veya hoca hesabınla giriş yaptıktan sonra sana ait bilgiler bu alanda gösterilir.</p>
+        <div class="welcome-steps">
+          <span>1. Kullanıcı tipini seç</span>
+          <span>2. Bilgilerini gir</span>
+          <span>3. Paneline ulaş</span>
+        </div>
+      </div>
+
+      <div class="member-panel is-hidden" id="member-panel">
+        <div class="member-top">
+          <div>
+            <p class="eyebrow">Üye Ekranı</p>
+            <h1>Merhaba, <span id="member-name">Üye</span></h1>
+            <p>Üyelik durumunu, ölçümlerini ve antrenman programını buradan takip edebilirsin.</p>
+          </div>
+          <span class="avatar large" id="member-avatar">Ü</span>
+        </div>
+
+        <div class="member-stats">
+          <article>
+            <span>Üyelik Bitişi</span>
+            <strong id="membership-end">-</strong>
+          </article>
+          <article>
+            <span>Son Kilo</span>
+            <strong id="last-weight">-</strong>
+          </article>
+          <article>
+            <span>Program</span>
+            <strong id="program-days">-</strong>
+          </article>
+        </div>
+
+        <div class="today-program">
+          <div>
+            <h2>Bugünkü Program</h2>
+            <p id="today-program-text">Program bilgisi yüklenmedi.</p>
+          </div>
+          <div class="program-actions">
+            <button class="outline-button">Detayları Gör</button>
+            <button class="outline-button" id="logout-button" type="button">Çıkış Yap</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="login-panel">
+        <h2>Sisteme Giriş</h2>
+        <p>İşlem yapmak için kullanıcı tipini seç.</p>
+
+        <div class="role-tabs">
+          <button class="active" type="button" data-role="Üye">Üye</button>
+          <button type="button" data-role="Hoca">Hoca</button>
+          <a href="admin.html">Admin</a>
+        </div>
+
+        <form class="login-form" id="login-form">
+          <label>
+            Telefon veya Kullanıcı Adı
+            <input type="text" name="username" value="0544 222 33 44">
+          </label>
+          <label>
+            Şifre
+            <input type="password" name="password" value="123456">
+          </label>
+          <p class="form-message" id="login-message"></p>
+          <button type="submit" class="primary-button" id="login-button">Giriş Yap</button>
+        </form>
+      </aside>
+    </section>
+
+    <section class="quick-section">
+      <div class="section-head">
+        <div>
+          <h2>Üye İşlemleri</h2>
+          <p>Üye sadece kendi üyelik, ölçüm ve antrenman bilgilerini görür.</p>
+        </div>
+      </div>
+
+      <div class="user-action-grid">
+        <article id="uye" class="user-action-card">
+          <span class="module-number">Üye</span>
+          <h3>Üye Paneli</h3>
+          <p>Üyelik süresi, ölçüm geçmişi, antrenman programı ve supplement alışveriş geçmişi.</p>
+          <div class="card-actions">
+            <button class="outline-button">Ölçümlerim</button>
+            <button class="outline-button">Programım</button>
+          </div>
+        </article>
+
+        <article id="hoca" class="user-action-card">
+          <span class="module-number">Hoca</span>
+          <h3>Hoca Paneli</h3>
+          <p>Atanmış üyeler, program yazma, gelişim takibi ve günlük antrenman listesi.</p>
+          <div class="card-actions">
+            <button class="outline-button">Üyelerim</button>
+            <button class="outline-button">Program Yaz</button>
+          </div>
+        </article>
+
+        <article class="user-action-card">
+          <span class="module-number">Supplement</span>
+          <h3>Alışveriş Geçmişi</h3>
+          <p>Üyenin daha önce aldığı ürünler ve son supplement alışverişleri burada görünür.</p>
+          <div class="card-actions">
+            <button class="outline-button">Geçmişim</button>
+            <button class="outline-button">Ürünler</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="quick-section">
+      <div class="section-head">
+        <div>
+          <h2>Kişisel Özet</h2>
+          <p>Bu bilgiler sadece giriş yapan üyeye ait olacak şekilde gösterilir.</p>
+        </div>
+      </div>
+
+      <div class="public-summary">
+        <article>
+          <span>Kalan Üyelik</span>
+          <strong>1 Gün</strong>
+        </article>
+        <article>
+          <span>Son Ölçüm</span>
+          <strong>68 kg</strong>
+        </article>
+        <article>
+          <span>Son Program</span>
+          <strong>Yok</strong>
+        </article>
+        <article>
+          <span>Son Alışveriş</span>
+          <strong>-</strong>
+        </article>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
