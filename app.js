@@ -3,6 +3,14 @@ const loginModal = document.querySelector("#login-modal");
 const modalSteps = loginModal.querySelectorAll(".modal-step");
 const modalCloseButton = document.querySelector("#modal-close");
 const modalBackButton = document.querySelector("#modal-back");
+const programModal = document.querySelector("#program-modal");
+const programModalCloseButton = document.querySelector("#program-modal-close");
+const programModalTitle = document.querySelector("#program-modal-title");
+const programModalSubtitle = document.querySelector("#program-modal-subtitle");
+const progressModal = document.querySelector("#progress-modal");
+const progressModalCloseButton = document.querySelector("#progress-modal-close");
+const progressModalTitle = document.querySelector("#progress-modal-title");
+const progressModalSubtitle = document.querySelector("#progress-modal-subtitle");
 const openLoginButtons = [
   document.querySelector("#open-login-button"),
   document.querySelector("#hero-login-button"),
@@ -41,10 +49,7 @@ const coachFields = {
   assignedCard: document.querySelector("#assigned-members-card"),
   assignedList: document.querySelector("#assigned-members-list"),
   progressList: document.querySelector("#progress-members-list"),
-  programCard: document.querySelector("#program-detail-card"),
   programDetail: document.querySelector("#program-detail"),
-  programStatus: document.querySelector("#selected-program-status"),
-  progressCard: document.querySelector("#progress-detail-card"),
   progressStatus: document.querySelector("#selected-progress-status"),
   progressBody: document.querySelector("#coach-progress-body"),
 };
@@ -160,6 +165,38 @@ function closeLoginModal() {
   }, 200);
 }
 
+function openProgramModal() {
+  programModal.classList.remove("is-hidden");
+  document.body.classList.add("modal-open");
+  requestAnimationFrame(() => {
+    programModal.classList.add("is-visible");
+  });
+}
+
+function closeProgramModal() {
+  programModal.classList.remove("is-visible");
+  document.body.classList.remove("modal-open");
+  setTimeout(() => {
+    programModal.classList.add("is-hidden");
+  }, 200);
+}
+
+function openProgressModal() {
+  progressModal.classList.remove("is-hidden");
+  document.body.classList.add("modal-open");
+  requestAnimationFrame(() => {
+    progressModal.classList.add("is-visible");
+  });
+}
+
+function closeProgressModal() {
+  progressModal.classList.remove("is-visible");
+  document.body.classList.remove("modal-open");
+  setTimeout(() => {
+    progressModal.classList.add("is-hidden");
+  }, 200);
+}
+
 function fillMemberPanel(data) {
   fields.name.textContent = data.name || "Üye";
   fields.avatar.textContent = data.initials || "Ü";
@@ -205,20 +242,26 @@ function resetCoachPanel() {
   coachFields.assignedList.innerHTML = emptyCoachState("Hoca girişi sonrası atanmış üyeler listelenir.");
   coachFields.progressList.innerHTML = emptyCoachState("Hoca girişi sonrası gelişimi incelenebilecek üyeler listelenir.");
   coachFields.programDetail.innerHTML = emptyCoachState("Bir üye için “Programı Gör” butonuna bas.");
-  coachFields.programCard.classList.add("is-hidden");
-  coachFields.progressCard.classList.add("is-hidden");
-  coachFields.programStatus.textContent = "Seçim bekliyor";
-  coachFields.progressStatus.textContent = "Seçim bekliyor";
-  coachFields.progressBody.innerHTML = '<tr><td colspan="5">Bir üye için “Gelişimi İncele” butonuna bas.</td></tr>';
+  programModalTitle.textContent = "Program Detayları";
+  programModalSubtitle.textContent = "Seçilen üyenin programı.";
+  progressModalTitle.textContent = "Gelişim Kayıtları";
+  progressModalSubtitle.textContent = "Seçilen üyenin gelişim tablosu.";
+  programModal.classList.add("is-hidden");
+  programModal.classList.remove("is-visible");
+  progressModal.classList.add("is-hidden");
+  progressModal.classList.remove("is-visible");
+  coachFields.progressStatus.textContent = "Liste";
+  coachFields.progressBody.innerHTML = '<tr><td colspan="5">Bir üye için “Gelişimi Göster” butonuna bas.</td></tr>';
 }
 
 function renderProgramDetail(member) {
   const programs = Array.isArray(member.programs) ? member.programs : [];
-  coachFields.programStatus.textContent = member.name || "Üye seçildi";
-  coachFields.programCard.classList.remove("is-hidden");
+  programModalTitle.textContent = `${member.name || "Üye"} Programı`;
+  programModalSubtitle.textContent = "Atanmış program detayları.";
 
   if (!programs.length) {
     coachFields.programDetail.innerHTML = emptyCoachState(`${member.name || "Seçili üye"} için atanmış program bulunamadı.`);
+    openProgramModal();
     return;
   }
 
@@ -241,15 +284,17 @@ function renderProgramDetail(member) {
       <p>${escapeHtml(program.details || "Program detayı girilmemiş.")}</p>
     </section>
   `).join("");
+  openProgramModal();
 }
 
 function renderProgressTable(member) {
   const progress = Array.isArray(member.progress) ? member.progress : [];
-  coachFields.progressStatus.textContent = member.name || "Üye seçildi";
-  coachFields.progressCard.classList.remove("is-hidden");
+  progressModalTitle.textContent = `${member.name || "Üye"} Gelişimi`;
+  progressModalSubtitle.textContent = "Ölçüm ve gelişim kayıtları.";
 
   if (!progress.length) {
     coachFields.progressBody.innerHTML = `<tr><td colspan="5">${escapeHtml(member.name || "Seçili üye")} için gelişim kaydı bulunamadı.</td></tr>`;
+    openProgressModal();
     return;
   }
 
@@ -262,6 +307,7 @@ function renderProgressTable(member) {
       <td>${escapeHtml(row.note || "-")}</td>
     </tr>
   `).join("");
+  openProgressModal();
 }
 
 function renderCoachMembers(members) {
@@ -281,10 +327,9 @@ function renderCoachMembers(members) {
     item.innerHTML = `
       <div>
         <h3>${escapeHtml(member.name || "Üye")}</h3>
-        <p>${escapeHtml(member.phone || "Telefon yok")}</p>
         <small>${escapeHtml(latestProgram?.title || "Program ataması yok")}</small>
       </div>
-      <button class="outline-button small" type="button">Programı Gör</button>
+      <button class="outline-button small" type="button">Programı Göster</button>
     `;
     item.querySelector("button").addEventListener("click", () => {
       coachFields.assignedList.querySelectorAll(".coach-member-item").forEach((listItem) => {
@@ -302,7 +347,7 @@ function renderCoachMembers(members) {
         <strong>${escapeHtml(member.name || "Üye")}</strong>
         <small>${escapeHtml((member.progress || []).length)} kayıt</small>
       </div>
-      <button class="outline-button small" type="button">Gelişimi İncele</button>
+      <button class="outline-button small" type="button">Gelişimi Göster</button>
     `;
     progressItem.querySelector("button").addEventListener("click", () => {
       coachFields.progressList.querySelectorAll(".progress-member-item").forEach((listItem) => {
@@ -325,11 +370,12 @@ function fillCoachPanel(data) {
   coachFields.assignedButton.textContent = `Atanmış Üyeleri Gör (${members.length})`;
   coachFields.assignedCard.classList.add("is-hidden");
   coachFields.programDetail.innerHTML = emptyCoachState("Bir üye için “Programı Gör” butonuna bas.");
-  coachFields.programCard.classList.add("is-hidden");
-  coachFields.progressCard.classList.add("is-hidden");
-  coachFields.programStatus.textContent = "Seçim bekliyor";
-  coachFields.progressStatus.textContent = "Seçim bekliyor";
-  coachFields.progressBody.innerHTML = '<tr><td colspan="5">Bir üye için “Gelişimi İncele” butonuna bas.</td></tr>';
+  programModal.classList.add("is-hidden");
+  programModal.classList.remove("is-visible");
+  progressModal.classList.add("is-hidden");
+  progressModal.classList.remove("is-visible");
+  coachFields.progressStatus.textContent = "Liste";
+  coachFields.progressBody.innerHTML = '<tr><td colspan="5">Bir üye için “Gelişimi Göster” butonuna bas.</td></tr>';
   renderCoachMembers(members);
 }
 
@@ -359,6 +405,8 @@ coachFields.assignedButton.addEventListener("click", () => {
 });
 
 modalCloseButton.addEventListener("click", closeLoginModal);
+programModalCloseButton.addEventListener("click", closeProgramModal);
+progressModalCloseButton.addEventListener("click", closeProgressModal);
 
 modalBackButton.addEventListener("click", () => {
   showModalStep("role");
@@ -372,8 +420,32 @@ loginModal.addEventListener("click", (event) => {
   }
 });
 
+programModal.addEventListener("click", (event) => {
+  if (event.target === programModal) {
+    closeProgramModal();
+  }
+});
+
+progressModal.addEventListener("click", (event) => {
+  if (event.target === progressModal) {
+    closeProgressModal();
+  }
+});
+
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !loginModal.classList.contains("is-hidden")) {
+  if (event.key !== "Escape") return;
+
+  if (!progressModal.classList.contains("is-hidden")) {
+    closeProgressModal();
+    return;
+  }
+
+  if (!programModal.classList.contains("is-hidden")) {
+    closeProgramModal();
+    return;
+  }
+
+  if (!loginModal.classList.contains("is-hidden")) {
     closeLoginModal();
   }
 });

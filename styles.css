@@ -732,6 +732,11 @@ a {
   background: #fff;
 }
 
+.coach-member-item > div,
+.progress-member-item > div {
+  min-width: 0;
+}
+
 .coach-member-item.is-selected,
 .progress-member-item.is-selected {
   border-color: rgba(37, 99, 235, 0.45);
@@ -1534,6 +1539,11 @@ th {
   transform: translateY(16px) scale(0.98);
   opacity: 0;
   transition: transform 0.24s ease, opacity 0.22s ease;
+}
+
+.program-modal-card,
+.progress-modal-card {
+  max-width: 760px;
 }
 
 .modal-backdrop.is-visible .modal-card {

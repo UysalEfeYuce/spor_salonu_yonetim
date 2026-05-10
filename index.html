@@ -355,47 +355,16 @@
           </div>
         </article>
 
-        <article class="coach-card program-detail-card is-hidden" id="program-detail-card">
-          <div class="section-head compact">
-            <div>
-              <h2>Program Detayları</h2>
-              <p>Seçilen üyeye atanmış program kartı.</p>
-            </div>
-            <span class="status muted" id="selected-program-status">Seçim bekliyor</span>
-          </div>
-          <div class="program-detail" id="program-detail">
-            <p class="empty-state">Bir üye için “Programı Gör” butonuna bas.</p>
-          </div>
-        </article>
-
         <article class="coach-card coach-card-wide">
           <div class="section-head compact">
             <div>
               <h2>Gelişim Takibi</h2>
               <p>Hocaya atanmış üyelerin gelişim kayıtları.</p>
             </div>
-            <span class="status muted" id="selected-progress-status">Seçim bekliyor</span>
+            <span class="status muted" id="selected-progress-status">Liste</span>
           </div>
           <div class="progress-member-list" id="progress-members-list">
             <p class="empty-state">Hoca girişi sonrası gelişimi incelenebilecek üyeler listelenir.</p>
-          </div>
-          <div class="table-wrap coach-progress-table is-hidden" id="progress-detail-card">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Tarih</th>
-                  <th>Kilo</th>
-                  <th>Yağ Oranı</th>
-                  <th>Bel Çevresi</th>
-                  <th>Not</th>
-                </tr>
-              </thead>
-              <tbody id="coach-progress-body">
-                <tr>
-                  <td colspan="5">Bir üye için “Gelişimi İncele” butonuna bas.</td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         </article>
       </div>
@@ -463,6 +432,57 @@
           <p class="form-message" id="login-message"></p>
           <button type="submit" class="primary-button full">Panele Gir</button>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop is-hidden" id="program-modal" role="dialog" aria-modal="true" aria-labelledby="program-modal-title">
+    <div class="modal-card program-modal-card">
+      <button class="modal-close" id="program-modal-close" type="button" aria-label="Kapat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18"/>
+          <path d="m6 6 12 12"/>
+        </svg>
+      </button>
+
+      <p class="eyebrow">Atanmış Program</p>
+      <h2 id="program-modal-title">Program Detayları</h2>
+      <p class="modal-sub" id="program-modal-subtitle">Seçilen üyenin programı.</p>
+      <div class="program-detail" id="program-detail">
+        <p class="empty-state">Bir üye için “Programı Göster” butonuna bas.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop is-hidden" id="progress-modal" role="dialog" aria-modal="true" aria-labelledby="progress-modal-title">
+    <div class="modal-card progress-modal-card">
+      <button class="modal-close" id="progress-modal-close" type="button" aria-label="Kapat">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18"/>
+          <path d="m6 6 12 12"/>
+        </svg>
+      </button>
+
+      <p class="eyebrow">Gelişim Takibi</p>
+      <h2 id="progress-modal-title">Gelişim Kayıtları</h2>
+      <p class="modal-sub" id="progress-modal-subtitle">Seçilen üyenin gelişim tablosu.</p>
+      <div class="table-wrap coach-progress-table">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tarih</th>
+              <th>Kilo</th>
+              <th>Yağ Oranı</th>
+              <th>Bel Çevresi</th>
+              <th>Not</th>
+            </tr>
+          </thead>
+          <tbody id="coach-progress-body">
+            <tr>
+              <td colspan="5">Bir üye için “Gelişimi Göster” butonuna bas.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
