@@ -663,6 +663,13 @@ a {
   gap: 14px;
 }
 
+.coach-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
 .coach-grid article {
   min-height: 165px;
   padding: 18px;
@@ -723,6 +730,12 @@ a {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
+}
+
+.coach-member-item.is-selected,
+.progress-member-item.is-selected {
+  border-color: rgba(37, 99, 235, 0.45);
+  background: var(--blue-soft);
 }
 
 .coach-member-item h3 {
@@ -812,7 +825,13 @@ a {
 }
 
 .coach-progress-table {
-  margin-top: 8px;
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--blue);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(23, 32, 51, 0.06);
 }
 
 button:disabled {
