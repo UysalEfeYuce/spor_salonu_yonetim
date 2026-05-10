@@ -112,6 +112,80 @@ const demoCoachData = {
         },
       ],
     },
+    {
+      id: 1043,
+      name: "Ayşe Kaya",
+      phone: "0533 444 55 66",
+      programs: [
+        {
+          id: 8,
+          title: "Kilo Verme - 3 Gün",
+          details: "Pazartesi full body kuvvet, Çarşamba interval kardiyo, Cumartesi alt vücut ve core. Antrenman sonunda 20 dakika düşük tempo yürüyüş eklenecek.",
+          days: "3",
+          date: "03.05.2026",
+        },
+      ],
+      progress: [
+        {
+          date: "06.05.2026",
+          weight: "74.2",
+          body_fat: "27.5",
+          waist: "88",
+          note: "Haftalık kilo düşüşü hedef aralıkta.",
+        },
+        {
+          date: "29.04.2026",
+          weight: "75",
+          body_fat: "28.1",
+          waist: "89",
+          note: "Kardiyo günleri düzenli tamamlandı.",
+        },
+        {
+          date: "22.04.2026",
+          weight: "75.6",
+          body_fat: "28.8",
+          waist: "90",
+          note: "Başlangıç ölçümü alındı.",
+        },
+      ],
+    },
+    {
+      id: 1044,
+      name: "Gürkan Işık",
+      phone: "0555 777 88 99",
+      programs: [
+        {
+          id: 9,
+          title: "Kuvvet - 5 Gün",
+          details: "Squat, bench press ve deadlift ana hareketleri haftalık ilerleme ile takip edilecek. Yardımcı günlerde sırt, omuz ve core stabilizasyon çalışmaları var.",
+          days: "5",
+          date: "01.05.2026",
+        },
+      ],
+      progress: [
+        {
+          date: "07.05.2026",
+          weight: "82.4",
+          body_fat: "18.2",
+          waist: "84",
+          note: "Bench press çalışma kilosu 2.5 kg arttı.",
+        },
+        {
+          date: "30.04.2026",
+          weight: "82.1",
+          body_fat: "18.4",
+          waist: "84",
+          note: "Deadlift formu stabil.",
+        },
+        {
+          date: "23.04.2026",
+          weight: "81.8",
+          body_fat: "18.6",
+          waist: "85",
+          note: "Kuvvet programına geçiş yapıldı.",
+        },
+      ],
+    },
   ],
 };
 
