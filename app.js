@@ -14,6 +14,7 @@ const loginMessage = document.querySelector("#login-message");
 const memberPanel = document.querySelector("#member-panel");
 const coachPanel = document.querySelector("#coach-panel");
 const logoutButtons = document.querySelectorAll(".logout-button");
+const loginSubmitButton = loginForm.querySelector('button[type="submit"]');
 
 const fields = {
   name: document.querySelector("#member-name"),
@@ -32,6 +33,18 @@ const fields = {
   totalSpending: document.querySelector("#total-spending"),
 };
 
+const coachFields = {
+  name: document.querySelector("#coach-name"),
+  avatar: document.querySelector("#coach-avatar"),
+  assignedCount: document.querySelector("#assigned-count"),
+  assignedList: document.querySelector("#assigned-members-list"),
+  progressList: document.querySelector("#progress-members-list"),
+  programDetail: document.querySelector("#program-detail"),
+  programStatus: document.querySelector("#selected-program-status"),
+  progressStatus: document.querySelector("#selected-progress-status"),
+  progressBody: document.querySelector("#coach-progress-body"),
+};
+
 const testMemberData = {
   name: "Uysal Efe Yüce",
   initials: "UE",
@@ -44,6 +57,53 @@ const testMemberData = {
   program_name: "Hipertrofi - 4 Gün",
   coach: "Burak Koç",
   total_spending: "2.560 TL",
+};
+
+const demoCoachData = {
+  coach: {
+    id: 1,
+    name: "Burak Koç",
+    initials: "BK",
+  },
+  assigned_members: [
+    {
+      id: 1042,
+      name: "Uysal Efe Yüce",
+      phone: "0544 222 33 44",
+      programs: [
+        {
+          id: 7,
+          title: "Hipertrofi - 4 Gün",
+          details: "Pazartesi göğüs, omuz ve triceps; Salı sırt ve biceps; Perşembe bacak; Cuma omuz ve karın. Ana hareketlerde kontrollü tempo, son sette 1-2 tekrar yedek bırakılacak.",
+          days: "4",
+          date: "05.05.2026",
+        },
+      ],
+      progress: [
+        {
+          date: "05.05.2026",
+          weight: "68",
+          body_fat: "15",
+          waist: "78",
+          note: "Kilo düşüşü kontrollü, kuvvet korunuyor.",
+        },
+        {
+          date: "28.04.2026",
+          weight: "68.5",
+          body_fat: "15.4",
+          waist: "79",
+          note: "Beslenme uyumu iyi.",
+        },
+        {
+          date: "21.04.2026",
+          weight: "69.2",
+          body_fat: "16",
+          waist: "80",
+          note: "Kardiyo süresi artırıldı.",
+        },
+      ],
+    },
+  ],
 };
 
 function calcRemainingDays(dateStr) {
@@ -113,6 +173,155 @@ function fillMemberPanel(data) {
   fields.totalSpending.textContent = data.total_spending || "-";
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function withUnit(value, unit) {
+  if (value === null || value === undefined || value === "") return "-";
+  const text = String(value);
+  return text.includes(unit) ? text : `${text} ${unit}`;
+}
+
+function emptyCoachState(message) {
+  return `<p class="empty-state">${escapeHtml(message)}</p>`;
+}
+
+function resetCoachPanel() {
+  coachFields.name.textContent = "Hoca";
+  coachFields.avatar.textContent = "H";
+  coachFields.assignedCount.textContent = "0 üye";
+  coachFields.assignedList.innerHTML = emptyCoachState("Hoca girişi sonrası atanmış üyeler listelenir.");
+  coachFields.progressList.innerHTML = emptyCoachState("Hoca girişi sonrası gelişimi incelenebilecek üyeler listelenir.");
+  coachFields.programDetail.innerHTML = emptyCoachState("Bir üye için “Programı Gör” butonuna bas.");
+  coachFields.programStatus.textContent = "Seçim bekliyor";
+  coachFields.progressStatus.textContent = "Seçim bekliyor";
+  coachFields.progressBody.innerHTML = '<tr><td colspan="5">Bir üye için “Gelişimi İncele” butonuna bas.</td></tr>';
+}
+
+function renderProgramDetail(member) {
+  const programs = Array.isArray(member.programs) ? member.programs : [];
+  coachFields.programStatus.textContent = member.name || "Üye seçildi";
+
+  if (!programs.length) {
+    coachFields.programDetail.innerHTML = emptyCoachState(`${member.name || "Seçili üye"} için atanmış program bulunamadı.`);
+    return;
+  }
+
+  coachFields.programDetail.innerHTML = programs.map((program) => `
+    <section class="program-card">
+      <div>
+        <span class="program-card-label">${escapeHtml(member.name || "Üye")}</span>
+        <h3>${escapeHtml(program.title || "Program")}</h3>
+      </div>
+      <dl class="program-meta">
+        <div>
+          <dt>Gün</dt>
+          <dd>${escapeHtml(program.days || "-")}</dd>
+        </div>
+        <div>
+          <dt>Tarih</dt>
+          <dd>${escapeHtml(program.date || "-")}</dd>
+        </div>
+      </dl>
+      <p>${escapeHtml(program.details || "Program detayı girilmemiş.")}</p>
+    </section>
+  `).join("");
+}
+
+function renderProgressTable(member) {
+  const progress = Array.isArray(member.progress) ? member.progress : [];
+  coachFields.progressStatus.textContent = member.name || "Üye seçildi";
+
+  if (!progress.length) {
+    coachFields.progressBody.innerHTML = `<tr><td colspan="5">${escapeHtml(member.name || "Seçili üye")} için gelişim kaydı bulunamadı.</td></tr>`;
+    return;
+  }
+
+  coachFields.progressBody.innerHTML = progress.map((row) => `
+    <tr>
+      <td>${escapeHtml(row.date || "-")}</td>
+      <td><strong>${escapeHtml(withUnit(row.weight, "kg"))}</strong></td>
+      <td>${escapeHtml(withUnit(row.body_fat, "%"))}</td>
+      <td>${escapeHtml(withUnit(row.waist, "cm"))}</td>
+      <td>${escapeHtml(row.note || "-")}</td>
+    </tr>
+  `).join("");
+}
+
+function renderCoachMembers(members) {
+  if (!members.length) {
+    coachFields.assignedList.innerHTML = emptyCoachState("Bu hocaya atanmış üye bulunamadı.");
+    coachFields.progressList.innerHTML = emptyCoachState("Gelişim kaydı göstermek için atanmış üye bulunamadı.");
+    return;
+  }
+
+  coachFields.assignedList.innerHTML = "";
+  coachFields.progressList.innerHTML = "";
+
+  members.forEach((member) => {
+    const latestProgram = Array.isArray(member.programs) && member.programs.length ? member.programs[0] : null;
+    const item = document.createElement("div");
+    item.className = "coach-member-item";
+    item.innerHTML = `
+      <div>
+        <h3>${escapeHtml(member.name || "Üye")}</h3>
+        <p>${escapeHtml(member.phone || "Telefon yok")}</p>
+        <small>${escapeHtml(latestProgram?.title || "Program ataması yok")}</small>
+      </div>
+      <button class="outline-button small" type="button">Programı Gör</button>
+    `;
+    item.querySelector("button").addEventListener("click", () => renderProgramDetail(member));
+    coachFields.assignedList.appendChild(item);
+
+    const progressItem = document.createElement("div");
+    progressItem.className = "progress-member-item";
+    progressItem.innerHTML = `
+      <div>
+        <strong>${escapeHtml(member.name || "Üye")}</strong>
+        <small>${escapeHtml((member.progress || []).length)} kayıt</small>
+      </div>
+      <button class="outline-button small" type="button">Gelişimi İncele</button>
+    `;
+    progressItem.querySelector("button").addEventListener("click", () => renderProgressTable(member));
+    coachFields.progressList.appendChild(progressItem);
+  });
+}
+
+function fillCoachPanel(data) {
+  const coach = data.coach || {};
+  const members = Array.isArray(data.assigned_members) ? data.assigned_members : [];
+
+  coachFields.name.textContent = coach.name || "Hoca";
+  coachFields.avatar.textContent = coach.initials || "H";
+  coachFields.assignedCount.textContent = `${members.length} üye`;
+  coachFields.programDetail.innerHTML = emptyCoachState("Bir üye için “Programı Gör” butonuna bas.");
+  coachFields.programStatus.textContent = "Seçim bekliyor";
+  coachFields.progressStatus.textContent = "Seçim bekliyor";
+  coachFields.progressBody.innerHTML = '<tr><td colspan="5">Bir üye için “Gelişimi İncele” butonuna bas.</td></tr>';
+  renderCoachMembers(members);
+
+  if (members.length) {
+    renderProgramDetail(members[0]);
+    renderProgressTable(members[0]);
+  }
+}
+
+async function loadCoachPanel() {
+  loginMessage.textContent = "Demo hoca paneli açılıyor...";
+  loginSubmitButton.disabled = true;
+
+  fillCoachPanel(demoCoachData);
+  closeLoginModal();
+  showOnly(coachPanel);
+  loginSubmitButton.disabled = false;
+}
+
 openLoginButtons.forEach((button) => {
   if (!button) return;
   button.addEventListener("click", () => {
@@ -151,17 +360,16 @@ roleCards.forEach((card) => {
   });
 });
 
-loginForm.addEventListener("submit", (event) => {
+loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   loginMessage.textContent = "";
 
-  closeLoginModal();
-
   if (selectedRole === "coach") {
-    showOnly(coachPanel);
+    await loadCoachPanel();
     return;
   }
 
+  closeLoginModal();
   fillMemberPanel(testMemberData);
   showOnly(memberPanel);
 });
@@ -171,6 +379,9 @@ logoutButtons.forEach((button) => {
     loginForm.reset();
     roleCards.forEach((item) => item.classList.remove("active"));
     selectedRole = "member";
+    resetCoachPanel();
     showOnly(welcomeScreen);
   });
 });
+
+resetCoachPanel();

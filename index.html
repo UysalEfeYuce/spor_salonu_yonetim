@@ -331,41 +331,68 @@
       <div class="member-top">
         <div>
           <p class="eyebrow">Hoca POV</p>
-          <h1>Merhaba, Burak Koç</h1>
-          <p>Atanmış üyelerin, bugünkü derslerin ve yazman gereken programlar burada görünür.</p>
+          <h1>Merhaba, <span id="coach-name">Hoca</span></h1>
+          <p>Atanmış üyelerin, program detayları ve gelişim kayıtları burada görünür.</p>
         </div>
-        <span class="avatar large">BK</span>
+        <span class="avatar large" id="coach-avatar">H</span>
       </div>
 
       <div class="coach-grid">
-        <article>
-          <h2>Atanmış Üyeler</h2>
-          <ul>
-            <li>Uysal Efe Yüce - hipertrofi programı</li>
-            <li>Ayşe Kaya - kilo verme programı</li>
-            <li>Gürkan Işık - kuvvet programı</li>
-          </ul>
+        <article class="coach-card">
+          <div class="section-head compact">
+            <div>
+              <h2>Atanmış Üyeler</h2>
+              <p>Program ataması olan üyeler.</p>
+            </div>
+            <span class="status muted" id="assigned-count">0 üye</span>
+          </div>
+          <div class="coach-member-list" id="assigned-members-list">
+            <p class="empty-state">Hoca girişi sonrası atanmış üyeler listelenir.</p>
+          </div>
         </article>
 
-        <article>
-          <h2>Bugünkü Dersler</h2>
-          <ul>
-            <li>10:00 - Uysal Efe Yüce</li>
-            <li>14:30 - Ayşe Kaya</li>
-            <li>18:00 - Grup antrenmanı</li>
-          </ul>
+        <article class="coach-card program-detail-card">
+          <div class="section-head compact">
+            <div>
+              <h2>Program Detayları</h2>
+              <p>Seçilen üyeye atanmış program kartı.</p>
+            </div>
+            <span class="status muted" id="selected-program-status">Seçim bekliyor</span>
+          </div>
+          <div class="program-detail" id="program-detail">
+            <p class="empty-state">Bir üye için “Programı Gör” butonuna bas.</p>
+          </div>
         </article>
 
-        <article>
-          <h2>Program Yaz</h2>
-          <p>Seçili üyeye yeni antrenman programı atanır.</p>
-          <button class="outline-button" type="button">Yeni Program</button>
-        </article>
-
-        <article>
-          <h2>Gelişim Takibi</h2>
-          <p>Son ölçüm giren üye: <strong>Uysal Efe Yüce</strong></p>
-          <p>Son kilo: <strong>68 kg</strong></p>
+        <article class="coach-card coach-card-wide">
+          <div class="section-head compact">
+            <div>
+              <h2>Gelişim Takibi</h2>
+              <p>Hocaya atanmış üyelerin gelişim kayıtları.</p>
+            </div>
+            <span class="status muted" id="selected-progress-status">Seçim bekliyor</span>
+          </div>
+          <div class="progress-member-list" id="progress-members-list">
+            <p class="empty-state">Hoca girişi sonrası gelişimi incelenebilecek üyeler listelenir.</p>
+          </div>
+          <div class="table-wrap coach-progress-table">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tarih</th>
+                  <th>Kilo</th>
+                  <th>Yağ Oranı</th>
+                  <th>Bel Çevresi</th>
+                  <th>Not</th>
+                </tr>
+              </thead>
+              <tbody id="coach-progress-body">
+                <tr>
+                  <td colspan="5">Bir üye için “Gelişimi İncele” butonuna bas.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </article>
       </div>
 

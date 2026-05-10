@@ -679,6 +679,147 @@ a {
   color: var(--muted);
 }
 
+.coach-card .section-head {
+  margin-bottom: 14px;
+}
+
+.coach-card .section-head h2 {
+  margin-bottom: 4px;
+}
+
+.coach-card .section-head p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.coach-card-wide {
+  grid-column: 1 / -1;
+}
+
+.coach-member-list,
+.progress-member-list,
+.program-detail {
+  display: grid;
+  gap: 12px;
+}
+
+.empty-state {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.coach-member-item,
+.progress-member-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.coach-member-item h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.coach-member-item p {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.coach-member-item small,
+.progress-member-item small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.progress-member-list {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 14px;
+}
+
+.progress-member-item {
+  align-items: flex-start;
+}
+
+.progress-member-item strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+}
+
+.program-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--blue);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.program-card h3 {
+  margin: 4px 0 0;
+  font-size: 20px;
+}
+
+.program-card p {
+  margin: 0;
+  color: var(--ink);
+}
+
+.program-card-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.program-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.program-meta div {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.program-meta dt {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.program-meta dd {
+  margin: 0;
+  font-weight: 800;
+}
+
+.coach-progress-table {
+  margin-top: 8px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .logout-button {
   margin-top: 18px;
 }
@@ -1489,6 +1630,10 @@ th {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .progress-member-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .info-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -1583,8 +1728,15 @@ th {
   .public-summary,
   .welcome-steps,
   .member-summary,
+  .progress-member-list,
   .info-grid {
     grid-template-columns: 1fr;
+  }
+
+  .coach-member-item,
+  .progress-member-item {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .member-section {
