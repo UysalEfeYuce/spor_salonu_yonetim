@@ -94,7 +94,7 @@ if (!tableExists($pdo, 'antrenman_programi')) {
     jsonError('antrenman_programi tablosu bulunamadı.', 500);
 }
 
-$coachIdColumn = firstColumn($pdo, 'personel', ['id', 'personel_id', 'hoca_id']);
+$coachIdColumn = firstColumn($pdo, 'personel', ['id', 'per_id', 'perid', 'personel_id', 'hoca_id']);
 $coachNameColumn = firstColumn($pdo, 'personel', ['adsoyad', 'ad_soyad', 'isim', 'ad', 'personel_adi', 'hoca_adi']);
 $coachPhoneColumn = firstColumn($pdo, 'personel', ['telefon', 'telno', 'tel', 'phone']);
 $coachUsernameColumn = firstColumn($pdo, 'personel', ['kullanici_adi', 'username', 'email']);
@@ -141,20 +141,20 @@ if ($coachPasswordColumn && $password !== '' && (string) $coach[$coachPasswordCo
 $coachId = $coach[$coachIdColumn];
 $coachName = (string) $coach[$coachNameColumn];
 
-$programCoachColumn = firstColumn($pdo, 'antrenman_programi', ['hoca_id', 'personel_id', 'coach_id', 'egitmen_id']);
-$programMemberColumn = firstColumn($pdo, 'antrenman_programi', ['uye_id', 'uyeid', 'uyeler_id', 'member_id']);
-$programIdColumn = firstColumn($pdo, 'antrenman_programi', ['id', 'program_id']);
+$programCoachColumn = firstColumn($pdo, 'antrenman_programi', ['per_id', 'perid', 'hoca_id', 'personel_id', 'coach_id', 'egitmen_id']);
+$programMemberColumn = firstColumn($pdo, 'antrenman_programi', ['uyeid', 'uye_id', 'uyeler_id', 'member_id']);
+$programIdColumn = firstColumn($pdo, 'antrenman_programi', ['ant_id', 'antid', 'id', 'program_id']);
 $programTitleColumn = firstColumn($pdo, 'antrenman_programi', ['program_adi', 'baslik', 'program', 'program_tipi']);
-$programTextColumn = firstColumn($pdo, 'antrenman_programi', ['aciklama', 'detay', 'icerik', 'program_detay', 'program_detayi']);
+$programTextColumn = firstColumn($pdo, 'antrenman_programi', ['program_detayi', 'program_detay', 'programdetayi', 'aciklama', 'detay', 'icerik']);
 $programDayColumn = firstColumn($pdo, 'antrenman_programi', ['gun_sayisi', 'haftalik_gun', 'program_gunu']);
-$programDateColumn = firstColumn($pdo, 'antrenman_programi', ['tarih', 'program_tarihi', 'created_at']);
-$programOrderColumn = firstColumn($pdo, 'antrenman_programi', ['tarih', 'program_tarihi', 'created_at', 'id']);
+$programDateColumn = firstColumn($pdo, 'antrenman_programi', ['bas_tarih', 'tarih', 'program_tarihi', 'created_at']);
+$programOrderColumn = firstColumn($pdo, 'antrenman_programi', ['bas_tarih', 'tarih', 'program_tarihi', 'created_at', 'ant_id', 'antid', 'id']);
 
 if (!$programCoachColumn || !$programMemberColumn) {
     jsonError('antrenman_programi tablosunda hoca ve üye ilişkisi için uygun kolon bulunamadı.', 500);
 }
 
-$memberIdColumn = firstColumn($pdo, 'uyeler', ['id', 'uye_id', 'uyeno']);
+$memberIdColumn = firstColumn($pdo, 'uyeler', ['id', 'uyeid', 'uye_id', 'uyeno']);
 $memberNameColumn = firstColumn($pdo, 'uyeler', ['adsoyad', 'ad_soyad', 'isim', 'ad', 'uye_adi']);
 $memberPhoneColumn = firstColumn($pdo, 'uyeler', ['telefon', 'telno', 'tel', 'phone']);
 
@@ -218,7 +218,7 @@ if ($progressTable) {
     $progressOrderColumn = firstColumn($pdo, $progressTable, ['olcum_tarihi', 'tarih', 'gelisim_tarihi', 'created_at', 'id']);
     $weightColumn = firstColumn($pdo, $progressTable, ['kilo', 'agirlik', 'weight']);
     $bodyFatColumn = firstColumn($pdo, $progressTable, ['yag_orani', 'yag', 'body_fat', 'vucut_yag_orani']);
-    $waistColumn = firstColumn($pdo, $progressTable, ['bel', 'bel_cevresi', 'waist']);
+    $heightColumn = firstColumn($pdo, $progressTable, ['boy', 'height']);
     $noteColumn = firstColumn($pdo, $progressTable, ['not', 'notlar', 'aciklama', 'yorum', 'note']);
 
     if ($progressMemberColumn) {
@@ -226,7 +226,7 @@ if ($progressTable) {
             selectAlias($progressDateColumn, 'progress_date'),
             selectAlias($weightColumn, 'progress_weight'),
             selectAlias($bodyFatColumn, 'progress_body_fat'),
-            selectAlias($waistColumn, 'progress_waist'),
+            selectAlias($heightColumn, 'progress_height'),
             selectAlias($noteColumn, 'progress_note'),
         ]);
 
@@ -250,7 +250,7 @@ if ($progressTable) {
                     'date' => formatDateValue(isset($progressRow['progress_date']) ? (string) $progressRow['progress_date'] : null),
                     'weight' => $progressRow['progress_weight'] ?? null,
                     'body_fat' => $progressRow['progress_body_fat'] ?? null,
-                    'waist' => $progressRow['progress_waist'] ?? null,
+                    'height' => $progressRow['progress_height'] ?? null,
                     'note' => $progressRow['progress_note'] ?? null,
                 ];
             }

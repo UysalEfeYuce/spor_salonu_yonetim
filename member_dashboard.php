@@ -76,7 +76,7 @@ if (!tableExists($pdo, 'uyeler')) {
     jsonError('uyeler tablosu bulunamadı.', 500);
 }
 
-$memberIdColumn = firstColumn($pdo, 'uyeler', ['id', 'uye_id', 'uyeno']);
+$memberIdColumn = firstColumn($pdo, 'uyeler', ['id', 'uyeid', 'uye_id', 'uyeno']);
 $nameColumn = firstColumn($pdo, 'uyeler', ['adsoyad', 'ad_soyad', 'isim', 'ad', 'uye_adi']);
 $phoneColumn = firstColumn($pdo, 'uyeler', ['telefon', 'telno', 'tel', 'phone']);
 $usernameColumn = firstColumn($pdo, 'uyeler', ['kullanici_adi', 'username', 'email']);
@@ -125,13 +125,17 @@ $memberId = $member[$memberIdColumn];
 $memberName = (string) $member[$nameColumn];
 
 $membershipEnd = null;
-if (tableExists($pdo, 'uyelik_takibi')) {
-    $membershipMemberColumn = firstColumn($pdo, 'uyelik_takibi', ['uye_id', 'uyeid', 'uyeler_id', 'member_id']);
-    $endColumn = firstColumn($pdo, 'uyelik_takibi', ['bitis_tarihi', 'uyelik_bitis_tarihi', 'bitistarihi', 'son_tarih']);
+$membershipTable = tableExists($pdo, 'uyelik_talebi')
+    ? 'uyelik_talebi'
+    : (tableExists($pdo, 'uyelik_takibi') ? 'uyelik_takibi' : null);
+
+if ($membershipTable) {
+    $membershipMemberColumn = firstColumn($pdo, $membershipTable, ['uyeid', 'uye_id', 'uyeler_id', 'member_id']);
+    $endColumn = firstColumn($pdo, $membershipTable, ['bit_tarih', 'bitis_tarihi', 'uyelik_bitis_tarihi', 'bitistarihi', 'son_tarih']);
 
     if ($membershipMemberColumn && $endColumn) {
         $statement = $pdo->prepare(
-            "SELECT {$endColumn} FROM uyelik_takibi
+            "SELECT {$endColumn} FROM {$membershipTable}
              WHERE {$membershipMemberColumn} = ?
              ORDER BY {$endColumn} DESC
              LIMIT 1"
@@ -163,11 +167,11 @@ if (tableExists($pdo, 'vucut_olculeri')) {
 $programDays = null;
 $todayProgram = null;
 if (tableExists($pdo, 'antrenman_programi')) {
-    $programMemberColumn = firstColumn($pdo, 'antrenman_programi', ['uye_id', 'uyeid', 'uyeler_id', 'member_id']);
+    $programMemberColumn = firstColumn($pdo, 'antrenman_programi', ['uyeid', 'uye_id', 'uyeler_id', 'member_id']);
     $programTitleColumn = firstColumn($pdo, 'antrenman_programi', ['program_adi', 'baslik', 'program']);
-    $programTextColumn = firstColumn($pdo, 'antrenman_programi', ['aciklama', 'detay', 'icerik', 'program_detay', 'program_detayi']);
+    $programTextColumn = firstColumn($pdo, 'antrenman_programi', ['program_detayi', 'program_detay', 'programdetayi', 'aciklama', 'detay', 'icerik']);
     $programDayColumn = firstColumn($pdo, 'antrenman_programi', ['gun_sayisi', 'haftalik_gun', 'program_gunu']);
-    $programDateColumn = firstColumn($pdo, 'antrenman_programi', ['tarih', 'program_tarihi', 'created_at', 'id']);
+    $programDateColumn = firstColumn($pdo, 'antrenman_programi', ['bas_tarih', 'tarih', 'program_tarihi', 'created_at', 'id']);
 
     if ($programMemberColumn) {
         $selectColumns = [];
