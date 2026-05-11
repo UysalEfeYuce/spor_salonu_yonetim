@@ -533,53 +533,14 @@ function fillCoachPanel(data) {
   renderCoachMembers(currentCoachMembers);
 }
 
-async function requestPanelData(endpoint) {
-  const formData = new FormData(loginForm);
-  const response = await fetch(endpoint, {
-    method: "POST",
-    body: formData,
-  });
-
-  const payload = await response.json();
-  if (!response.ok || !payload.success) {
-    throw new Error(payload.message || "Giriş başarısız.");
-  }
-
-  return payload.data;
-}
-
-function normalizeMemberData(apiData) {
-  return {
-    ...demoMember,
-    name: apiData.name || demoMember.name,
-    initials: apiData.initials || demoMember.initials,
-    full_name: apiData.name || demoMember.full_name,
-    membership_end: apiData.membership_end || demoMember.membership_end,
-    program_name: apiData.today_program || demoMember.program_name,
-    program_detail: apiData.today_program || demoMember.program_detail,
-  };
-}
-
 async function loginMember() {
-  try {
-    const apiData = await requestPanelData("member_dashboard.php");
-    fillMemberPanel(normalizeMemberData(apiData));
-  } catch (error) {
-    fillMemberPanel(demoMember);
-  }
-
+  fillMemberPanel(demoMember);
   closeModal(loginModal);
   showOnly(memberPanel);
 }
 
 async function loginCoach() {
-  try {
-    const apiData = await requestPanelData("coach_dashboard.php");
-    fillCoachPanel(apiData);
-  } catch (error) {
-    fillCoachPanel(demoCoach);
-  }
-
+  fillCoachPanel(demoCoach);
   closeModal(loginModal);
   showOnly(coachPanel);
 }
