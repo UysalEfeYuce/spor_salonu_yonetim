@@ -47,7 +47,7 @@ const memberPurchasesBody = $("#member-purchases-body");
 const measurementsBody = $("#measurements-body");
 const logoutButtons = $$(".logout-button");
 const loginSubmitButton = loginForm.querySelector('button[type="submit"]');
-const API_URL = window.location.port === "3000" ? "" : "http://localhost:3000";
+const API_URL = "http://localhost:3000";
 
 const fields = {
   name: $("#member-name"),

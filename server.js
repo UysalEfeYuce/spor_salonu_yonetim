@@ -47,22 +47,22 @@ function initials(name) {
 
 async function getMemberPayload(memberId) {
   const [[member]] = await pool.query(
-    `SELECT u.id, u.ad AS name, u.telno AS phone, ut.baslangictarihi, ut.bitistarihi,
+    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone, ut.baslangictarihi, ut.bitistarihi,
       ap.program_detayi AS programDetail, ap.baslangic_tarihi AS programDate, p.ad AS coach,
       COALESCE(SUM(s.adet * ur.fiyat), 0) AS totalSpending
     FROM uyeler u
-    LEFT JOIN uyelik_takibi ut ON ut.uyeid = u.id
-    LEFT JOIN antrenman_programi ap ON ap.id = (
-      SELECT ap2.id FROM antrenman_programi ap2
-      WHERE ap2.uyeid = u.id
-      ORDER BY ap2.baslangic_tarihi DESC, ap2.id DESC
+    LEFT JOIN uyelik_takibi ut ON ut.uyeid = u.uyeid
+    LEFT JOIN antrenman_programi ap ON ap.antrenman_id = (
+      SELECT ap2.antrenman_id FROM antrenman_programi ap2
+      WHERE ap2.uyeid = u.uyeid
+      ORDER BY ap2.baslangic_tarihi DESC, ap2.antrenman_id DESC
       LIMIT 1
     )
-    LEFT JOIN personel p ON p.id = ap.personelid
-    LEFT JOIN satislar s ON s.uyeid = u.id
-    LEFT JOIN urunler ur ON ur.id = s.urunid
-    WHERE u.id = ?
-    GROUP BY u.id, ut.id, ap.id, p.id
+    LEFT JOIN personel p ON p.per_id = ap.personelid
+    LEFT JOIN satislar s ON s.uyeid = u.uyeid
+    LEFT JOIN urunler ur ON ur.urun_id = s.urunid
+    WHERE u.uyeid = ?
+    GROUP BY u.uyeid, ut.id, ap.antrenman_id, p.per_id
     ORDER BY ut.bitistarihi DESC
     LIMIT 1`,
     [memberId],
@@ -74,16 +74,16 @@ async function getMemberPayload(memberId) {
     `SELECT olcum_tarihi AS date, kilo AS weight, boy AS height, yag_orani AS body_fat
     FROM vucut_olculeri
     WHERE uyeid = ?
-    ORDER BY olcum_tarihi DESC, id DESC`,
+    ORDER BY olcum_tarihi DESC, olcum_id DESC`,
     [memberId],
   );
 
   const [purchases] = await pool.query(
-    `SELECT s.id, s.satistarihi AS date, ur.urunadi AS product, s.adet AS quantity, (s.adet * ur.fiyat) AS total
+    `SELECT s.sat_id AS id, s.satistarihi AS date, ur.urunadi AS product, s.adet AS quantity, (s.adet * ur.fiyat) AS total
     FROM satislar s
-    JOIN urunler ur ON ur.id = s.urunid
+    JOIN urunler ur ON ur.urun_id = s.urunid
     WHERE s.uyeid = ?
-    ORDER BY s.satistarihi DESC, s.id DESC`,
+    ORDER BY s.satistarihi DESC, s.sat_id DESC`,
     [memberId],
   );
 
@@ -119,13 +119,13 @@ async function getMemberPayload(memberId) {
 }
 
 async function getCoachPayload(coachId) {
-  const [[coach]] = await pool.query("SELECT id, ad AS name FROM personel WHERE id = ?", [coachId]);
+  const [[coach]] = await pool.query("SELECT per_id AS id, ad AS name FROM personel WHERE per_id = ?", [coachId]);
   if (!coach) return null;
 
   const [members] = await pool.query(
-    `SELECT DISTINCT u.id, u.ad AS name, u.telno AS phone
+    `SELECT DISTINCT u.uyeid AS id, u.ad AS name, u.telno AS phone
     FROM uyeler u
-    JOIN antrenman_programi ap ON ap.uyeid = u.id
+    JOIN antrenman_programi ap ON ap.uyeid = u.uyeid
     WHERE ap.personelid = ?
     ORDER BY u.ad`,
     [coachId],
@@ -134,10 +134,10 @@ async function getCoachPayload(coachId) {
   const assignedMembers = [];
   for (const member of members) {
     const [programs] = await pool.query(
-      `SELECT id, program_detayi AS details, baslangic_tarihi AS date
+      `SELECT antrenman_id AS id, program_detayi AS details, baslangic_tarihi AS date
       FROM antrenman_programi
       WHERE uyeid = ? AND personelid = ?
-      ORDER BY baslangic_tarihi DESC, id DESC`,
+      ORDER BY baslangic_tarihi DESC, antrenman_id DESC`,
       [member.id, coachId],
     );
 
@@ -145,7 +145,7 @@ async function getCoachPayload(coachId) {
       `SELECT olcum_tarihi AS date, kilo AS weight, boy AS height, yag_orani AS body_fat
       FROM vucut_olculeri
       WHERE uyeid = ?
-      ORDER BY olcum_tarihi DESC, id DESC`,
+      ORDER BY olcum_tarihi DESC, olcum_id DESC`,
       [member.id],
     );
 
@@ -189,9 +189,9 @@ app.post("/api/login", async (req, res) => {
   const { role, username } = req.body;
 
   if (role === "coach") {
-    let [[coach]] = await pool.query("SELECT id FROM personel WHERE id = ? OR ad = ? LIMIT 1", [username, username]);
+    let [[coach]] = await pool.query("SELECT per_id AS id FROM personel WHERE per_id = ? OR ad = ? LIMIT 1", [username, username]);
     if (!coach) {
-      [[coach]] = await pool.query("SELECT id FROM personel ORDER BY id LIMIT 1");
+      [[coach]] = await pool.query("SELECT per_id AS id FROM personel ORDER BY per_id LIMIT 1");
     }
     if (!coach) return res.status(401).json({ message: "Hoca bulunamadi." });
     return res.json(await getCoachPayload(coach.id));
@@ -199,7 +199,7 @@ app.post("/api/login", async (req, res) => {
 
   const normalizedPhone = String(username || "").replace(/\D/g, "");
   const [[member]] = await pool.query(
-    "SELECT id FROM uyeler WHERE REPLACE(REPLACE(telno, ' ', ''), '-', '') = ? OR telno = ? LIMIT 1",
+    "SELECT uyeid AS id FROM uyeler WHERE REPLACE(REPLACE(telno, ' ', ''), '-', '') = ? OR telno = ? LIMIT 1",
     [normalizedPhone, username],
   );
   if (!member) return res.status(401).json({ message: "Uye bulunamadi." });
@@ -219,10 +219,10 @@ app.get("/api/coaches/:id", async (req, res) => {
 });
 
 app.get("/api/admin/data", async (req, res) => {
-  const [members] = await pool.query("SELECT id, ad AS name, telno AS phone FROM uyeler ORDER BY id DESC");
-  const [staff] = await pool.query("SELECT id, ad AS name, maas AS salary FROM personel ORDER BY id");
+  const [members] = await pool.query("SELECT uyeid AS id, ad AS name, telno AS phone FROM uyeler ORDER BY uyeid DESC");
+  const [staff] = await pool.query("SELECT per_id AS id, ad AS name, maas AS salary FROM personel ORDER BY per_id");
   const [products] = await pool.query(
-    "SELECT id, urunadi AS name, kategori AS category, fiyat AS price, stokmiktari AS stock FROM urunler ORDER BY id",
+    "SELECT urun_id AS id, urunadi AS name, kategori AS category, fiyat AS price, stokmiktari AS stock FROM urunler ORDER BY urun_id",
   );
   const [[summary]] = await pool.query(
     `SELECT
@@ -248,8 +248,17 @@ app.post("/api/admin/members", async (req, res) => {
 
 app.post("/api/admin/staff", async (req, res) => {
   const { name, salary } = req.body;
+  if (!name) return res.status(400).json({ message: "Personel adi gerekli." });
+
+  const [[existing]] = await pool.query("SELECT per_id AS id FROM personel WHERE ad = ? LIMIT 1", [name]);
+
+  if (existing) {
+    await pool.query("UPDATE personel SET maas = ? WHERE per_id = ?", [salary || 0, existing.id]);
+    return res.status(200).json({ ok: true, id: existing.id, updated: true });
+  }
+
   const [result] = await pool.query("INSERT INTO personel (ad, maas) VALUES (?, ?)", [name, salary || 0]);
-  res.status(201).json({ ok: true, id: result.insertId });
+  res.status(201).json({ ok: true, id: result.insertId, updated: false });
 });
 
 app.post("/api/admin/products", async (req, res) => {
@@ -279,7 +288,7 @@ app.post("/api/admin/sales", async (req, res) => {
 
   try {
     await connection.beginTransaction();
-    const [[product]] = await connection.query("SELECT id, stokmiktari FROM urunler WHERE id = ? FOR UPDATE", [
+    const [[product]] = await connection.query("SELECT urun_id AS id, stokmiktari FROM urunler WHERE urun_id = ? FOR UPDATE", [
       productId,
     ]);
 
@@ -298,7 +307,7 @@ app.post("/api/admin/sales", async (req, res) => {
       productId,
       amount,
     ]);
-    await connection.query("UPDATE urunler SET stokmiktari = stokmiktari - ? WHERE id = ?", [amount, productId]);
+    await connection.query("UPDATE urunler SET stokmiktari = stokmiktari - ? WHERE urun_id = ?", [amount, productId]);
     await connection.commit();
     res.status(201).json({ ok: true });
   } catch (error) {
@@ -316,7 +325,7 @@ app.post("/api/purchases", async (req, res) => {
 
   try {
     await connection.beginTransaction();
-    const [[product]] = await connection.query("SELECT id, stokmiktari FROM urunler WHERE id = ? FOR UPDATE", [
+    const [[product]] = await connection.query("SELECT urun_id AS id, stokmiktari FROM urunler WHERE urun_id = ? FOR UPDATE", [
       productId,
     ]);
 
@@ -335,7 +344,7 @@ app.post("/api/purchases", async (req, res) => {
       productId,
       amount,
     ]);
-    await connection.query("UPDATE urunler SET stokmiktari = stokmiktari - ? WHERE id = ?", [amount, productId]);
+    await connection.query("UPDATE urunler SET stokmiktari = stokmiktari - ? WHERE urun_id = ?", [amount, productId]);
     await connection.commit();
     res.status(201).json(await getMemberPayload(memberId));
   } catch (error) {
