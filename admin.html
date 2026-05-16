@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yönetim Paneli</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="admin.html">
+      <span class="brand-mark">S</span>
+      <span>
+        <strong>Spor Salonu</strong>
+        <small>Yönetim Paneli</small>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Yönetim menüsü">
+      <a href="#ozet" class="active">Özet</a>
+      <a href="#uyeler">Üyeler</a>
+      <a href="#personel">Personel</a>
+      <a href="#atama">Hoca Atama</a>
+      <a href="#satis">Satış</a>
+      <a href="#stok">Stok</a>
+    </nav>
+  </aside>
+
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Admin</p>
+        <h1>Yönetim Paneli</h1>
+      </div>
+      <a class="outline-button" href="index.html">Ana Sayfa</a>
+    </header>
+
+    <section id="ozet" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Genel Özet</h2>
+          <p>Şemadaki ana tablolar: üyeler, personel, ürünler, satışlar, üyelik talebi, ölçüler ve antrenman programı.</p>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="summary-card">
+          <span>Toplam Üye</span>
+          <strong>150</strong>
+        </article>
+        <article class="summary-card success">
+          <span>Aktif Üyelik</span>
+          <strong>120</strong>
+        </article>
+        <article class="summary-card">
+          <span>Personel</span>
+          <strong>6</strong>
+        </article>
+        <article class="summary-card danger">
+          <span>Kritik Stok</span>
+          <strong>3 Ürün</strong>
+        </article>
+      </div>
+    </section>
+
+    <section id="uyeler" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Üye Kaydı</h2>
+          <p><code>uyeler</code> ve <code>uyelik_talebi</code> tablolarına uygun temel kayıt.</p>
+        </div>
+      </div>
+
+      <form class="form-card two-column" id="member-form">
+        <label>
+          Ad Soyad
+          <input type="text" name="name" placeholder="Ad Soyad" required>
+        </label>
+        <label>
+          Telefon
+          <input type="tel" name="phone" placeholder="05xx xxx xx xx" required>
+        </label>
+        <label>
+          Üyelik Başlangıç
+          <input type="date" name="startDate" required>
+        </label>
+        <label>
+          Üyelik Bitiş
+          <input type="date" name="endDate" required>
+        </label>
+        <button class="primary-button" type="submit">Üyeyi Kaydet</button>
+      </form>
+    </section>
+
+    <section id="personel" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Personel ve Maaş</h2>
+          <p><code>personel</code> tablosundaki hoca adı ve maaş bilgisi admin tarafından yönetilir.</p>
+        </div>
+      </div>
+
+      <form class="form-card two-column" id="staff-form">
+        <label>
+          Hoca Adı
+          <input type="text" name="name" placeholder="Örn. Burak Koç" required>
+        </label>
+        <label>
+          Maaş
+          <input type="number" name="salary" min="0" step="500" placeholder="30000" required>
+        </label>
+        <button class="primary-button" type="submit">Personeli Kaydet</button>
+      </form>
+
+      <div class="table-wrap section-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Personel ID</th>
+              <th>Ad</th>
+              <th>Maaş</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody id="staff-table-body">
+            <tr>
+              <td>1</td>
+              <td>Burak Koç</td>
+              <td>30.000 TL</td>
+              <td><span class="status ok">Aktif</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>Selin Arslan</td>
+              <td>28.000 TL</td>
+              <td><span class="status ok">Aktif</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="atama" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Hoca Atama</h2>
+          <p>Admin hocayı üyeye bağlar. Program detayını ve gelişim kaydını hoca kendi panelinden yazar.</p>
+        </div>
+      </div>
+
+      <form class="form-card two-column" id="assignment-form">
+        <label>
+          Üye
+          <select name="memberId" id="assignment-member-select" required>
+          </select>
+        </label>
+        <label>
+          Hoca
+          <select name="staffId" id="assignment-staff-select" required>
+          </select>
+        </label>
+        <label>
+          Başlangıç Tarihi
+          <input type="date" name="startDate" required>
+        </label>
+        <label>
+          İlk Program Durumu
+          <input type="text" name="programDetail" value="Hoca tarafından yazılacak">
+        </label>
+        <button class="primary-button" type="submit">Atamayı Kaydet</button>
+      </form>
+    </section>
+
+    <section id="satis" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Satış Ekle</h2>
+          <p><code>satislar</code> kaydı açılır, satılan adet kadar <code>urunler.stokmiktari</code> düşer.</p>
+        </div>
+      </div>
+
+      <form class="form-card two-column" id="sale-form">
+        <label>
+          Üye
+          <select name="memberId" id="sale-member-select" required>
+          </select>
+        </label>
+        <label>
+          Ürün
+          <select name="productId" id="sale-product-select" required>
+          </select>
+        </label>
+        <label>
+          Adet
+          <input type="number" name="quantity" value="1" min="1" required>
+        </label>
+        <button class="primary-button" type="submit">Satışı Kaydet</button>
+      </form>
+    </section>
+
+    <section id="stok" class="section">
+      <div class="section-head">
+        <div>
+          <h2>Stok Listesi</h2>
+          <p><code>urunler</code> tablosundaki fiyat ve stok bilgisi.</p>
+        </div>
+        <button class="outline-button" id="new-product-button" type="button">Yeni Ürün</button>
+      </div>
+
+      <form class="form-card two-column is-hidden" id="product-form">
+        <label>
+          Ürün Adı
+          <input type="text" name="name" placeholder="Örn. Whey Protein" required>
+        </label>
+        <label>
+          Kategori
+          <input type="text" name="category" placeholder="Örn. Supplement" required>
+        </label>
+        <label>
+          Fiyat
+          <input type="number" name="price" min="0" step="0.01" placeholder="1250" required>
+        </label>
+        <label>
+          Stok
+          <input type="number" name="stock" min="0" step="1" placeholder="10" required>
+        </label>
+        <button class="primary-button" type="submit">Ürünü Kaydet</button>
+      </form>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ürün ID</th>
+              <th>Ürün</th>
+              <th>Kategori</th>
+              <th>Fiyat</th>
+              <th>Stok</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody id="products-table-body">
+            <tr>
+              <td>1</td>
+              <td>Whey Protein</td>
+              <td>Supplement</td>
+              <td>1.250 TL</td>
+              <td>18</td>
+              <td><span class="status ok">Yeterli</span></td>
+            </tr>
+            <tr class="low-stock">
+              <td>2</td>
+              <td>Kreatin</td>
+              <td>Supplement</td>
+              <td>650 TL</td>
+              <td>4</td>
+              <td><span class="status danger">Azaldı</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>Shaker</td>
+              <td>Aksesuar</td>
+              <td>180 TL</td>
+              <td>12</td>
+              <td><span class="status ok">Yeterli</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>

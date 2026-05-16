@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spor Salonu Yönetimi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="home-page">
+  <header class="home-header">
+    <a class="home-logo" href="index.html">
+      <span class="brand-mark">S</span>
+      <span>Spor Salonu Yönetimi</span>
+    </a>
+    <button class="nav-button" id="open-login-button" type="button">Giriş Yap</button>
+  </header>
+
+  <main class="portal-shell">
+    <section class="welcome-screen" id="welcome-screen">
+      <div class="welcome-inner">
+        <p class="eyebrow">Panel</p>
+        <h1>Spor salonu işlemleri tek yerde.</h1>
+        <p>Üye kendi bilgilerini görür. Hoca atanmış üyeye program ve ölçüm girer. Admin üye, maaş, stok ve atama işlerini yönetir.</p>
+        <button class="primary-button hero-cta" id="hero-login-button" type="button">Giriş Yap</button>
+      </div>
+    </section>
+
+    <section class="member-panel dashboard-panel is-hidden" id="member-panel">
+      <div class="member-top">
+        <div>
+          <p class="eyebrow">Üye Paneli</p>
+          <h1>Merhaba, <span id="member-name">Üye</span></h1>
+          <p>Üyelik, ölçüm, program ve alışveriş bilgilerin.</p>
+        </div>
+        <span class="avatar large" id="member-avatar">Ü</span>
+      </div>
+
+      <div class="member-summary">
+        <article class="summary-card">
+          <span>Üyelik Durumu</span>
+          <strong class="status ok inline">Aktif</strong>
+        </article>
+        <article class="summary-card success">
+          <span>Kalan Gün</span>
+          <strong id="membership-remaining">-</strong>
+          <small>Bitiş: <span id="membership-end-inline">-</span></small>
+        </article>
+        <article class="summary-card">
+          <span>Aktif Program</span>
+          <strong id="program-name">-</strong>
+          <small id="program-coach">Hoca: -</small>
+        </article>
+        <article class="summary-card">
+          <span>Toplam Harcama</span>
+          <strong id="total-spending">-</strong>
+        </article>
+      </div>
+
+      <article class="member-section">
+        <div class="section-head compact">
+          <div>
+            <h2>Üyelik Bilgileri</h2>
+            <p><code>uyeler</code> ve <code>uyelik_talebi</code> kayıt özeti.</p>
+          </div>
+        </div>
+        <div class="info-grid">
+          <div><span>Üye No</span><strong id="member-id">-</strong></div>
+          <div><span>Ad Soyad</span><strong id="member-fullname">-</strong></div>
+          <div><span>Telefon</span><strong id="member-phone">-</strong></div>
+          <div><span>Kayıt Tarihi</span><strong id="member-registered">-</strong></div>
+          <div><span>Paket</span><strong id="membership-package">-</strong></div>
+          <div><span>Bitiş Tarihi</span><strong id="membership-end">-</strong></div>
+        </div>
+      </article>
+
+      <article class="member-section">
+        <div class="section-head compact">
+          <div>
+            <h2>Vücut Ölçüleri</h2>
+            <p><code>vucut_olculeri</code> son kayıtları.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>Kilo</th>
+                <th>Boy</th>
+                <th>Yağ Oranı</th>
+              </tr>
+            </thead>
+            <tbody id="measurements-body">
+              <tr>
+                <td>05.05.2026</td>
+                <td><strong>68.0 kg</strong></td>
+                <td>176 cm</td>
+                <td>15%</td>
+              </tr>
+              <tr>
+                <td>28.04.2026</td>
+                <td>68.5 kg</td>
+                <td>176 cm</td>
+                <td>15.4%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="member-section">
+        <div class="section-head compact">
+          <div>
+            <h2>Antrenman Programı</h2>
+            <p>Hoca: <strong id="program-coach-name">-</strong></p>
+          </div>
+        </div>
+        <div class="program-card">
+          <h3 id="member-program-title">Program Detayı</h3>
+          <p id="member-program-detail">Hoca tarafından yazılan program burada görünür.</p>
+        </div>
+      </article>
+
+      <article class="member-section">
+        <div class="section-head compact">
+          <div>
+            <h2>Alışverişler</h2>
+            <p><code>satislar</code> ve <code>urunler</code> kayıt özeti.</p>
+          </div>
+          <button class="primary-button small" id="new-purchase-button" type="button">Yeni Ürün Al</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>Ürün</th>
+                <th>Adet</th>
+                <th>Toplam</th>
+              </tr>
+            </thead>
+            <tbody id="member-purchases-body">
+              <tr>
+                <td>03.05.2026</td>
+                <td>Whey Protein</td>
+                <td>1</td>
+                <td><strong>1.250 TL</strong></td>
+              </tr>
+              <tr>
+                <td>21.04.2026</td>
+                <td>Kreatin</td>
+                <td>1</td>
+                <td><strong>650 TL</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <button class="outline-button logout-button" type="button">Çıkış Yap</button>
+    </section>
+
+    <section class="coach-panel dashboard-panel is-hidden" id="coach-panel">
+      <div class="member-top">
+        <div>
+          <p class="eyebrow">Hoca Paneli</p>
+          <h1>Merhaba, <span id="coach-name">Hoca</span></h1>
+          <p>Admin tarafından sana atanan üyeler için program yaz ve gelişim ölçümü ekle.</p>
+        </div>
+        <span class="avatar large" id="coach-avatar">H</span>
+      </div>
+
+      <div class="coach-actions">
+        <button class="primary-button" id="show-assigned-members" type="button">Atanmış Üyeleri Göster</button>
+      </div>
+
+      <div class="coach-grid">
+        <article class="coach-card is-hidden" id="assigned-members-card">
+          <div class="section-head compact">
+            <div>
+              <h2>Atanmış Üyeler</h2>
+              <p><code>antrenman_programi.uyeid</code> ve <code>per-id</code> ilişkisine göre listelenir.</p>
+            </div>
+            <span class="status muted" id="assigned-count">0 üye</span>
+          </div>
+          <div class="coach-member-list" id="assigned-members-list">
+            <p class="empty-state">Girişten sonra üyeler listelenir.</p>
+          </div>
+        </article>
+
+        <article class="coach-card coach-card-wide">
+          <div class="section-head compact">
+            <div>
+              <h2>Gelişim Takibi</h2>
+              <p>Ölçüm ekleme işlemi <code>vucut_olculeri</code> tablosuna karşılık gelir.</p>
+            </div>
+            <span class="status muted" id="selected-progress-status">Liste</span>
+          </div>
+          <div class="progress-member-list" id="progress-members-list">
+            <p class="empty-state">Girişten sonra gelişim listesi görünür.</p>
+          </div>
+        </article>
+      </div>
+
+      <button class="outline-button logout-button" type="button">Çıkış Yap</button>
+    </section>
+  </main>
+
+  <div class="modal-backdrop is-hidden" id="login-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <button class="modal-close" id="modal-close" type="button" aria-label="Kapat">x</button>
+
+      <div class="modal-step" data-step="role">
+        <p class="eyebrow">Giriş</p>
+        <h2 id="modal-title">Rolünü seç</h2>
+        <p class="modal-sub">Hangi paneli kullanacağını seç.</p>
+
+        <div class="role-choice-grid">
+          <button class="role-card" type="button" data-role="member">
+            <strong>Üye</strong>
+            <small>Üyelik, ölçüm ve program bilgileri.</small>
+          </button>
+          <button class="role-card" type="button" data-role="coach">
+            <strong>Hoca</strong>
+            <small>Program yazma ve gelişim ölçümü.</small>
+          </button>
+          <a class="role-card admin-role" href="admin.html">
+            <strong>Admin</strong>
+            <small>Üye, personel maaşı, stok ve hoca atama.</small>
+          </a>
+        </div>
+      </div>
+
+      <div class="modal-step is-hidden" data-step="login">
+        <button class="modal-back" id="modal-back" type="button">Rol seçimine dön</button>
+        <p class="eyebrow">Bilgiler</p>
+        <h2 id="login-title">Üye Girişi</h2>
+
+        <form class="login-form role-login-form" id="login-form">
+          <label>
+            Telefon veya Kullanıcı Adı
+            <input type="text" name="username" value="0544 222 33 44" autocomplete="username">
+          </label>
+          <label>
+            Şifre
+            <input type="password" name="password" value="123456" autocomplete="current-password">
+          </label>
+          <p class="form-message" id="login-message"></p>
+          <button type="submit" class="primary-button full">Panele Gir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop is-hidden" id="purchase-modal" role="dialog" aria-modal="true" aria-labelledby="purchase-modal-title">
+    <div class="modal-card">
+      <button class="modal-close" id="purchase-modal-close" type="button" aria-label="Kapat">x</button>
+      <h2 id="purchase-modal-title">Yeni Ürün Al</h2>
+      <p class="modal-sub">Ürün ve adet seç. Bu ekranda demo olarak alışveriş listene eklenir.</p>
+      <form class="form-card two-column" id="purchase-form">
+        <label>
+          Ürün
+          <select id="purchase-product-input">
+            <option value="whey">Whey Protein - 1.250 TL</option>
+            <option value="kreatin">Kreatin - 650 TL</option>
+            <option value="shaker">Shaker - 180 TL</option>
+          </select>
+        </label>
+        <label>
+          Adet
+          <input type="number" id="purchase-quantity-input" min="1" value="1">
+        </label>
+        <button class="primary-button" type="submit">Alışverişi Ekle</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop is-hidden" id="program-modal" role="dialog" aria-modal="true" aria-labelledby="program-modal-title">
+    <div class="modal-card program-modal-card">
+      <button class="modal-close" id="program-modal-close" type="button" aria-label="Kapat">x</button>
+      <h2 id="program-modal-title">Program Detayı</h2>
+      <p class="modal-sub" id="program-modal-subtitle">Seçilen üyenin programı.</p>
+      <div class="program-detail" id="program-detail">
+        <p class="empty-state">Bir üye için programı göster.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop is-hidden" id="program-form-modal" role="dialog" aria-modal="true" aria-labelledby="program-form-title">
+    <div class="modal-card program-modal-card">
+      <button class="modal-close" id="program-form-close" type="button" aria-label="Kapat">x</button>
+      <h2 id="program-form-title">Program Yaz</h2>
+      <p class="modal-sub" id="program-form-subtitle">Seçilen üyeye program detayı gir.</p>
+      <form class="login-form" id="program-form">
+        <label>
+          Program Başlığı
+          <input type="text" id="program-title-input" placeholder="Örn. 4 Gün Hipertrofi">
+        </label>
+        <label>
+          Başlangıç Tarihi
+          <input type="date" id="program-date-input">
+        </label>
+        <label>
+          Program Detayı
+          <textarea id="program-detail-input" rows="6" placeholder="Egzersiz, set, tekrar ve gün detaylarını yaz."></textarea>
+        </label>
+        <button class="primary-button" type="submit">Programı Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop is-hidden" id="progress-modal" role="dialog" aria-modal="true" aria-labelledby="progress-modal-title">
+    <div class="modal-card progress-modal-card">
+      <button class="modal-close" id="progress-modal-close" type="button" aria-label="Kapat">x</button>
+      <h2 id="progress-modal-title">Gelişim Kayıtları</h2>
+      <p class="modal-sub" id="progress-modal-subtitle">Seçilen üyenin ölçüm kayıtları.</p>
+      <div class="table-wrap coach-progress-table">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tarih</th>
+              <th>Kilo</th>
+              <th>Boy</th>
+              <th>Yağ Oranı</th>
+              <th>Not</th>
+            </tr>
+          </thead>
+          <tbody id="coach-progress-body">
+            <tr>
+              <td colspan="5">Bir üye için gelişimi göster.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop is-hidden" id="progress-form-modal" role="dialog" aria-modal="true" aria-labelledby="progress-form-title">
+    <div class="modal-card progress-modal-card">
+      <button class="modal-close" id="progress-form-close" type="button" aria-label="Kapat">x</button>
+      <h2 id="progress-form-title">Ölçüm Ekle</h2>
+      <p class="modal-sub" id="progress-form-subtitle">Seçilen üyenin gelişim ölçüsünü gir.</p>
+      <form class="form-card two-column" id="progress-form">
+        <label>
+          Ölçüm Tarihi
+          <input type="date" id="progress-date-input">
+        </label>
+        <label>
+          Kilo
+          <input type="number" id="progress-weight-input" min="0" step="0.1" placeholder="68.5">
+        </label>
+        <label>
+          Boy
+          <input type="number" id="progress-height-input" min="0" step="1" placeholder="176">
+        </label>
+        <label>
+          Yağ Oranı
+          <input type="number" id="progress-fat-input" min="0" step="0.1" placeholder="15.4">
+        </label>
+        <label class="full-span">
+          Not
+          <textarea id="progress-note-input" rows="4" placeholder="Kısa gelişim notu."></textarea>
+        </label>
+        <button class="primary-button" type="submit">Ölçümü Kaydet</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

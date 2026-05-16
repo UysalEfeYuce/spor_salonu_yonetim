@@ -252,6 +252,17 @@ app.post("/api/admin/staff", async (req, res) => {
   res.status(201).json({ ok: true, id: result.insertId });
 });
 
+app.post("/api/admin/products", async (req, res) => {
+  const { name, category, price, stock } = req.body;
+
+  const [result] = await pool.query(
+    "INSERT INTO urunler (urunadi, kategori, fiyat, stokmiktari) VALUES (?, ?, ?, ?)",
+    [name, category, price || 0, stock || 0],
+  );
+
+  res.status(201).json({ ok: true, id: result.insertId });
+});
+
 app.post("/api/admin/assignments", async (req, res) => {
   const { memberId, staffId, startDate, programDetail } = req.body;
   await pool.query(
