@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS antrenman_programi;
 DROP TABLE IF EXISTS uyelik_takibi;
 DROP TABLE IF EXISTS satislar;
 DROP TABLE IF EXISTS urunler;
+DROP TABLE IF EXISTS adminler;
 DROP TABLE IF EXISTS personel;
 DROP TABLE IF EXISTS uyeler;
 
@@ -27,6 +28,12 @@ CREATE TABLE IF NOT EXISTS personel (
 );
 
 -- 3. URUNLER TABLOSU (Sütun adı 'urun_id' olarak senkronize edildi)
+CREATE TABLE IF NOT EXISTS adminler (
+  admin_id INT AUTO_INCREMENT PRIMARY KEY,
+  kullanici_adi VARCHAR(50) NOT NULL UNIQUE,
+  sifre VARCHAR(255) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS urunler (
   urun_id INT AUTO_INCREMENT PRIMARY KEY,
   urunadi VARCHAR(100) NOT NULL,
@@ -92,6 +99,10 @@ INSERT IGNORE INTO personel (per_id, ad, maas)
 VALUES
   (1, 'Burak Koc', 30000),
   (2, 'Selin Arslan', 28000);
+
+INSERT IGNORE INTO adminler (admin_id, kullanici_adi, sifre)
+VALUES
+  (1, 'admin', '1234');
 
 INSERT IGNORE INTO urunler (urun_id, urunadi, kategori, fiyat, stokmiktari)
 VALUES

@@ -542,6 +542,26 @@ tfoot td {
   margin-top: 4px;
 }
 
+.admin-login-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.admin-login-card {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 14px;
+}
+
+.topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;

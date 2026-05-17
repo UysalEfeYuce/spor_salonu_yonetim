@@ -1,5 +1,11 @@
 const $ = (selector) => document.querySelector(selector);
 
+const adminLoginScreen = $("#admin-login-screen");
+const adminLoginForm = $("#admin-login-form");
+const adminLoginMessage = $("#admin-login-message");
+const adminSidebar = $("#admin-sidebar");
+const adminApp = $("#admin-app");
+const adminLogoutButton = $("#admin-logout-button");
 const memberForm = $("#member-form");
 const staffForm = $("#staff-form");
 const assignmentForm = $("#assignment-form");
@@ -29,6 +35,7 @@ const memberDetailProgram = $("#member-detail-program");
 const memberDetailMeasurements = $("#member-detail-measurements");
 const summaryValues = document.querySelectorAll(".summary-card strong");
 const API_URL = window.location.port === "3000" ? "" : "http://localhost:3000";
+const ADMIN_LOGIN_KEY = "sporSalonuAdminLoggedIn";
 
 function formatMoney(value) {
   return `${Number(value || 0).toLocaleString("tr-TR")} TL`;
@@ -63,6 +70,24 @@ async function api(path, options = {}) {
 
     throw error;
   }
+}
+
+function showAdminPanel() {
+  adminLoginScreen.classList.add("is-hidden");
+  adminSidebar.classList.remove("is-hidden");
+  adminApp.classList.remove("is-hidden");
+}
+
+function showAdminLogin() {
+  adminLoginScreen.classList.remove("is-hidden");
+  adminSidebar.classList.add("is-hidden");
+  adminApp.classList.add("is-hidden");
+}
+
+async function startAdminPanel() {
+  showAdminPanel();
+  setDefaultDates();
+  await loadAdminData();
 }
 
 function option(value, text) {
@@ -302,5 +327,37 @@ saleForm.addEventListener("submit", (event) => {
   }));
 });
 
-setDefaultDates();
-loadAdminData().catch((error) => alert(error.message));
+adminLoginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  adminLoginMessage.textContent = "Giris yapiliyor...";
+
+  try {
+    const form = new FormData(adminLoginForm);
+    await api("/api/admin/login", {
+      method: "POST",
+      body: JSON.stringify({
+        username: form.get("username"),
+        password: form.get("password"),
+      }),
+    });
+
+    sessionStorage.setItem(ADMIN_LOGIN_KEY, "1");
+    adminLoginMessage.textContent = "";
+    adminLoginForm.reset();
+    await startAdminPanel();
+  } catch (error) {
+    adminLoginMessage.textContent = error.message;
+  }
+});
+
+adminLogoutButton.addEventListener("click", () => {
+  sessionStorage.removeItem(ADMIN_LOGIN_KEY);
+  showAdminLogin();
+});
+
+if (sessionStorage.getItem(ADMIN_LOGIN_KEY) === "1") {
+  startAdminPanel().catch((error) => alert(error.message));
+} else {
+  showAdminLogin();
+  setDefaultDates();
+}

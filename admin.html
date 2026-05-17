@@ -7,7 +7,25 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <aside class="sidebar">
+    <section class="admin-login-screen" id="admin-login-screen">
+      <form class="modal-card admin-login-card" id="admin-login-form">
+        <p class="eyebrow">Admin</p>
+        <h1>Yonetim Paneli Girisi</h1>
+        <p>Admin kullanici adi ve sifrenizle devam edin.</p>
+        <label>
+          Kullanici Adi
+          <input type="text" name="username" placeholder="admin" required />
+        </label>
+        <label>
+          Sifre
+          <input type="password" name="password" placeholder="Sifre" required />
+        </label>
+        <p class="form-message" id="admin-login-message"></p>
+        <button class="primary-button full" type="submit">Giris Yap</button>
+      </form>
+    </section>
+
+    <aside class="sidebar is-hidden" id="admin-sidebar">
       <a class="brand" href="admin.html">
         <span class="brand-mark">S</span>
         <span>
@@ -26,13 +44,16 @@
       </nav>
     </aside>
 
-    <main class="app">
+    <main class="app is-hidden" id="admin-app">
       <header class="topbar">
         <div>
           <p class="eyebrow">Admin</p>
           <h1>Yönetim Paneli</h1>
         </div>
-        <a class="outline-button" href="index.html">Ana Sayfa</a>
+        <div class="topbar-actions">
+          <button class="outline-button" id="admin-logout-button" type="button">Cikis</button>
+          <a class="outline-button" href="index.html">Ana Sayfa</a>
+        </div>
       </header>
 
       <section id="ozet" class="section">

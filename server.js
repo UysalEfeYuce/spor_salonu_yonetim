@@ -221,6 +221,27 @@ app.post("/api/login", async (req, res) => {
   res.json(await getMemberPayload(member.id));
 });
 
+app.post("/api/admin/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ message: "Admin kullanici adi ve sifre gerekli." });
+  }
+
+  const [[admin]] = await pool.query(
+    "SELECT admin_id AS id, kullanici_adi AS username, sifre FROM adminler WHERE kullanici_adi = ? LIMIT 1",
+    [String(username).trim()],
+  );
+
+  if (!admin) return res.status(401).json({ message: "Admin bulunamadi." });
+
+  if (String(password).trim() !== String(admin.sifre || "").trim()) {
+    return res.status(401).json({ message: "Admin sifresi hatali." });
+  }
+
+  res.json({ ok: true, admin: { id: admin.id, username: admin.username } });
+});
+
 app.get("/api/members/:id", async (req, res) => {
   const payload = await getMemberPayload(req.params.id);
   if (!payload) return res.status(404).json({ message: "Uye bulunamadi." });

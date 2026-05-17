@@ -48,6 +48,7 @@ const measurementsBody = $("#measurements-body");
 const logoutButtons = $$(".logout-button");
 const loginSubmitButton = loginForm.querySelector('button[type="submit"]');
 const API_URL = "http://localhost:3000";
+const ADMIN_LOGIN_KEY = "sporSalonuAdminLoggedIn";
 
 const fields = {
   name: $("#member-name"),
@@ -671,6 +672,20 @@ async function loginCoach() {
   showOnly(coachPanel);
 }
 
+async function loginAdmin() {
+  const formData = new FormData(loginForm);
+  await api("/api/admin/login", {
+    method: "POST",
+    body: JSON.stringify({
+      username: formData.get("username"),
+      password: formData.get("password"),
+    }),
+  });
+
+  sessionStorage.setItem(ADMIN_LOGIN_KEY, "1");
+  window.location.href = "admin.html";
+}
+
 async function refreshActivePanel() {
   try {
     if (currentMemberId && !memberPanel.classList.contains("is-hidden")) {
@@ -741,7 +756,7 @@ roleCards.forEach((card) => {
     selectedRole = card.dataset.role;
     roleCards.forEach((item) => item.classList.remove("active"));
     card.classList.add("active");
-    setText(loginTitle, selectedRole === "coach" ? "Hoca Girişi" : "Üye Girişi");
+    setText(loginTitle, selectedRole === "coach" ? "Hoca Girişi" : selectedRole === "admin" ? "Admin Girişi" : "Üye Girişi");
     setText(loginMessage, "");
     // Update login input hints/placeholders depending on role
     try {
@@ -749,7 +764,15 @@ roleCards.forEach((card) => {
       const passwordInput = loginForm.querySelector('input[name="password"]');
       const usernameHint = document.getElementById("login-username-hint");
 
-      if (selectedRole === "coach") {
+      if (selectedRole === "admin") {
+        if (usernameInput) {
+          usernameInput.placeholder = "Admin kullanici adi";
+          usernameInput.value = "";
+          usernameInput.autocomplete = "username";
+        }
+        if (passwordInput) passwordInput.placeholder = "Admin sifresi";
+        if (usernameHint) usernameHint.textContent = "Admin kullanici adi ve sifresi ile giris yapin.";
+      } else if (selectedRole === "coach") {
         if (usernameInput) {
           usernameInput.placeholder = "Hoca ID (sayı)";
 
@@ -786,6 +809,8 @@ loginForm.addEventListener("submit", async (event) => {
   try {
     if (selectedRole === "coach") {
       await loginCoach();
+    } else if (selectedRole === "admin") {
+      await loginAdmin();
     } else {
       await loginMember();
     }
