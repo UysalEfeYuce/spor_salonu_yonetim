@@ -398,6 +398,56 @@ tfoot td {
   margin-bottom: 14px;
 }
 
+/* Member detail side panel */
+.member-detail-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 380px;
+  max-width: 100%;
+  transform: translateX(100%);
+  transition: transform 220ms ease;
+  z-index: 1100;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+.member-detail-panel.open {
+  transform: translateX(0);
+}
+.member-detail-inner {
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  padding: 18px;
+  overflow: auto;
+}
+.member-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.member-detail-backdrop {
+  content: "";
+  position: fixed;
+  inset: 0 380px 0 0;
+  background: rgba(0,0,0,0.2);
+  display: none;
+}
+.member-detail-panel.open + .member-detail-backdrop,
+.member-detail-panel .member-detail-backdrop {
+  display: block;
+}
+.program-pre {
+  white-space: pre-wrap;
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.measurement { margin-bottom: 6px; }
+
 .coach-grid {
   grid-template-columns: 1fr 1fr;
 }

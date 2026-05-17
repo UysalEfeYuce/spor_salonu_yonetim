@@ -4,6 +4,7 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 const cors = require("cors");
 const express = require("express");
 const mysql = require("mysql2/promise");
+// bcrypt removed: using plain-text passwords to match existing DB
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -123,10 +124,14 @@ async function getCoachPayload(coachId) {
   if (!coach) return null;
 
   const [members] = await pool.query(
-    `SELECT DISTINCT u.uyeid AS id, u.ad AS name, u.telno AS phone
+    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone
     FROM uyeler u
-    JOIN antrenman_programi ap ON ap.uyeid = u.uyeid
-    WHERE ap.personelid = ?
+    WHERE (
+      SELECT ap2.personelid FROM antrenman_programi ap2
+      WHERE ap2.uyeid = u.uyeid
+      ORDER BY ap2.baslangic_tarihi DESC, ap2.antrenman_id DESC
+      LIMIT 1
+    ) = ?
     ORDER BY u.ad`,
     [coachId],
   );
@@ -186,14 +191,24 @@ app.get("/api/health", async (req, res) => {
 });
 
 app.post("/api/login", async (req, res) => {
-  const { role, username } = req.body;
+  const { role, username, password } = req.body;
 
   if (role === "coach") {
-    let [[coach]] = await pool.query("SELECT per_id AS id FROM personel WHERE per_id = ? OR ad = ? LIMIT 1", [username, username]);
-    if (!coach) {
-      [[coach]] = await pool.query("SELECT per_id AS id FROM personel ORDER BY per_id LIMIT 1");
-    }
+    if (!username || !password) return res.status(400).json({ message: "Hoca girişi için per_id ve şifre gerekli." });
+
+    const id = Number(String(username).trim());
+    if (Number.isNaN(id)) return res.status(400).json({ message: "Hoca girişi için numeric per_id giriniz." });
+
+    const [[coach]] = await pool.query(
+      "SELECT per_id AS id, ad AS name, sifre FROM personel WHERE per_id = ? LIMIT 1",
+      [id],
+    );
+
     if (!coach) return res.status(401).json({ message: "Hoca bulunamadi." });
+
+    const stored = (coach.sifre ?? "").toString().trim();
+    if (String(password).trim() !== stored) return res.status(401).json({ message: "Kimlik doğrulama başarısız." });
+
     return res.json(await getCoachPayload(coach.id));
   }
 
@@ -219,7 +234,18 @@ app.get("/api/coaches/:id", async (req, res) => {
 });
 
 app.get("/api/admin/data", async (req, res) => {
-  const [members] = await pool.query("SELECT uyeid AS id, ad AS name, telno AS phone FROM uyeler ORDER BY uyeid DESC");
+  const [members] = await pool.query(
+    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone,
+      (
+        SELECT p.ad FROM antrenman_programi ap
+        JOIN personel p ON p.per_id = ap.personelid
+        WHERE ap.uyeid = u.uyeid
+        ORDER BY ap.baslangic_tarihi DESC, ap.antrenman_id DESC
+        LIMIT 1
+      ) AS coach
+    FROM uyeler u
+    ORDER BY u.uyeid DESC`
+  );
   const [staff] = await pool.query("SELECT per_id AS id, ad AS name, maas AS salary FROM personel ORDER BY per_id");
   const [products] = await pool.query(
     "SELECT urun_id AS id, urunadi AS name, kategori AS category, fiyat AS price, stokmiktari AS stock FROM urunler ORDER BY urun_id",
@@ -236,28 +262,52 @@ app.get("/api/admin/data", async (req, res) => {
 });
 
 app.post("/api/admin/members", async (req, res) => {
-  const { name, phone, startDate, endDate } = req.body;
-  const [result] = await pool.query("INSERT INTO uyeler (ad, telno) VALUES (?, ?)", [name, phone]);
-  await pool.query("INSERT INTO uyelik_takibi (uyeid, baslangictarihi, bitistarihi) VALUES (?, ?, ?)", [
-    result.insertId,
-    startDate,
-    endDate,
-  ]);
-  res.status(201).json({ ok: true, id: result.insertId });
+  const { name, phone, startDate, endDate, staffId } = req.body;
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+    const [result] = await connection.query("INSERT INTO uyeler (ad, telno) VALUES (?, ?)", [name, phone]);
+    await connection.query(
+      "INSERT INTO uyelik_takibi (uyeid, baslangictarihi, bitistarihi) VALUES (?, ?, ?)",
+      [result.insertId, startDate, endDate],
+    );
+
+    if (staffId) {
+      await connection.query(
+        "INSERT INTO antrenman_programi (uyeid, personelid, program_detayi, baslangic_tarihi) VALUES (?, ?, ?, ?)",
+        [result.insertId, staffId, null, startDate],
+      );
+    }
+
+    await connection.commit();
+    res.status(201).json({ ok: true, id: result.insertId });
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 });
 
 app.post("/api/admin/staff", async (req, res) => {
-  const { name, salary } = req.body;
+  const { name, salary, password } = req.body;
   if (!name) return res.status(400).json({ message: "Personel adi gerekli." });
 
-  const [[existing]] = await pool.query("SELECT per_id AS id FROM personel WHERE ad = ? LIMIT 1", [name]);
+  const [[existing]] = await pool.query("SELECT per_id AS id, sifre FROM personel WHERE ad = ? LIMIT 1", [name]);
 
   if (existing) {
+    if (password) {
+      await pool.query("UPDATE personel SET maas = ?, sifre = ? WHERE per_id = ?", [salary || 0, String(password), existing.id]);
+      return res.status(200).json({ ok: true, id: existing.id, updated: true });
+    }
+
     await pool.query("UPDATE personel SET maas = ? WHERE per_id = ?", [salary || 0, existing.id]);
     return res.status(200).json({ ok: true, id: existing.id, updated: true });
   }
 
-  const [result] = await pool.query("INSERT INTO personel (ad, maas) VALUES (?, ?)", [name, salary || 0]);
+  const pwd = password ? String(password) : null;
+  const [result] = await pool.query("INSERT INTO personel (ad, maas, sifre) VALUES (?, ?, ?)", [name, salary || 0, pwd]);
   res.status(201).json({ ok: true, id: result.insertId, updated: false });
 });
 
@@ -274,11 +324,88 @@ app.post("/api/admin/products", async (req, res) => {
 
 app.post("/api/admin/assignments", async (req, res) => {
   const { memberId, staffId, startDate, programDetail } = req.body;
+  if (!memberId || !staffId) return res.status(400).json({ message: "memberId ve staffId gerekli." });
+
+  const [[last]] = await pool.query(
+    `SELECT personelid, program_detayi FROM antrenman_programi WHERE uyeid = ? ORDER BY baslangic_tarihi DESC, antrenman_id DESC LIMIT 1`,
+    [memberId],
+  );
+
+  if (last && Number(last.personelid) === Number(staffId)) {
+    return res.status(200).json({ ok: true, message: "Aynı hoca zaten atanmış." });
+  }
+
+  const detailToUse = programDetail != null && programDetail !== "" ? programDetail : last ? last.program_detayi : null;
+
   await pool.query(
     "INSERT INTO antrenman_programi (uyeid, personelid, program_detayi, baslangic_tarihi) VALUES (?, ?, ?, ?)",
-    [memberId, staffId, programDetail || "Hoca tarafindan yazilacak", startDate],
+    [memberId, staffId, detailToUse, startDate || new Date()],
   );
+
   res.status(201).json({ ok: true });
+});
+
+app.delete("/api/admin/members/:id", async (req, res) => {
+  const memberId = req.params.id;
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+    await connection.query("DELETE FROM satislar WHERE uyeid = ?", [memberId]);
+    await connection.query("DELETE FROM vucut_olculeri WHERE uyeid = ?", [memberId]);
+    await connection.query("DELETE FROM antrenman_programi WHERE uyeid = ?", [memberId]);
+    await connection.query("DELETE FROM uyelik_takibi WHERE uyeid = ?", [memberId]);
+    await connection.query("DELETE FROM uyeler WHERE uyeid = ?", [memberId]);
+    await connection.commit();
+    res.json({ ok: true });
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+});
+
+app.put("/api/admin/members/:id/coach", async (req, res) => {
+  const memberId = req.params.id;
+  const { staffId } = req.body;
+  if (!staffId) return res.status(400).json({ message: "staffId gerekli." });
+  const [[last]] = await pool.query(
+    `SELECT personelid, program_detayi FROM antrenman_programi WHERE uyeid = ? ORDER BY baslangic_tarihi DESC, antrenman_id DESC LIMIT 1`,
+    [memberId],
+  );
+
+  if (last && Number(last.personelid) === Number(staffId)) {
+    return res.status(200).json({ ok: true, message: "Aynı hoca zaten atanmış." });
+  }
+
+  const detailToUse = last ? last.program_detayi : null;
+
+  await pool.query(
+    "INSERT INTO antrenman_programi (uyeid, personelid, program_detayi, baslangic_tarihi) VALUES (?, ?, ?, NOW())",
+    [memberId, staffId, detailToUse],
+  );
+
+  res.json({ ok: true });
+});
+
+app.delete("/api/admin/staff/:id", async (req, res) => {
+  const staffId = req.params.id;
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+    // Delete programs assigned to this staff before deleting the staff record
+    await connection.query("DELETE FROM antrenman_programi WHERE personelid = ?", [staffId]);
+    await connection.query("DELETE FROM personel WHERE per_id = ?", [staffId]);
+    await connection.commit();
+    res.json({ ok: true });
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 });
 
 app.post("/api/admin/sales", async (req, res) => {

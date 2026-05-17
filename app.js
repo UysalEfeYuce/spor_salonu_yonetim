@@ -341,9 +341,9 @@ function resetCoachPanel() {
   setText(coachFields.name, "Hoca");
   setText(coachFields.avatar, "H");
   setText(coachFields.assignedCount, "0 üye");
-  setText(coachFields.assignedButton, "Atanmış Üyeleri Göster");
-  coachFields.assignedCard.classList.add("is-hidden");
-  coachFields.assignedList.innerHTML = emptyState("Girişten sonra üyeler listelenir.");
+  if (coachFields.assignedButton) setText(coachFields.assignedButton, "Atanmış Üyeleri Göster");
+  if (coachFields.assignedCard) coachFields.assignedCard.classList.add("is-hidden");
+  if (coachFields.assignedList) coachFields.assignedList.innerHTML = emptyState("Girişten sonra üyeler listelenir.");
   coachFields.progressList.innerHTML = emptyState("Girişten sonra gelişim listesi görünür.");
   coachFields.programDetail.innerHTML = emptyState("Bir üye için programı göster.");
   setText(programModalTitle, "Program Detayı");
@@ -577,12 +577,12 @@ async function saveProgress(event) {
 
 function renderCoachMembers(members) {
   if (!members.length) {
-    coachFields.assignedList.innerHTML = emptyState("Atanmış üye bulunamadı.");
+    if (coachFields.assignedList) coachFields.assignedList.innerHTML = emptyState("Atanmış üye bulunamadı.");
     coachFields.progressList.innerHTML = emptyState("Gelişim kaydı gösterilecek üye bulunamadı.");
     return;
   }
 
-  coachFields.assignedList.innerHTML = "";
+  if (coachFields.assignedList) coachFields.assignedList.innerHTML = "";
   coachFields.progressList.innerHTML = "";
 
   members.forEach((member) => {
@@ -603,7 +603,7 @@ function renderCoachMembers(members) {
     `;
     item.querySelector('[data-action="show-program"]').addEventListener("click", () => renderProgramDetail(member));
     item.querySelector('[data-action="write-program"]').addEventListener("click", () => openProgramForm(member));
-    coachFields.assignedList.appendChild(item);
+    if (coachFields.assignedList) coachFields.assignedList.appendChild(item);
 
     const progressItem = document.createElement("div");
     progressItem.className = "progress-member-item";
@@ -615,10 +615,12 @@ function renderCoachMembers(members) {
       <div class="item-actions">
         <button class="outline-button small" type="button" data-action="show-progress">Göster</button>
         <button class="primary-button small" type="button" data-action="add-progress">Ölçüm Ekle</button>
+        <button class="primary-button small" type="button" data-action="write-program">Program Yaz</button>
       </div>
     `;
     progressItem.querySelector('[data-action="show-progress"]').addEventListener("click", () => renderProgressTable(member));
     progressItem.querySelector('[data-action="add-progress"]').addEventListener("click", () => openProgressForm(member));
+    progressItem.querySelector('[data-action="write-program"]').addEventListener("click", () => openProgramForm(member));
     coachFields.progressList.appendChild(progressItem);
   });
 }
@@ -632,7 +634,8 @@ function fillCoachPanel(data) {
   setText(coachFields.avatar, coach.initials || "H");
   setText(coachFields.assignedCount, `${currentCoachMembers.length} üye`);
   setText(coachFields.assignedButton, `Atanmış Üyeleri Göster (${currentCoachMembers.length})`);
-  coachFields.assignedCard.classList.add("is-hidden");
+  if (coachFields.assignedCard) coachFields.assignedCard.classList.add("is-hidden");
+  if (!coachFields.assignedCard && coachFields.assignedButton) coachFields.assignedButton.style.display = "none";
   renderCoachMembers(currentCoachMembers);
 }
 
@@ -686,14 +689,17 @@ openLoginButtons.forEach((button) => {
   button?.addEventListener("click", openLoginModal);
 });
 
-coachFields.assignedButton.addEventListener("click", () => {
-  const shouldOpen = coachFields.assignedCard.classList.contains("is-hidden");
-  coachFields.assignedCard.classList.toggle("is-hidden", !shouldOpen);
-  setText(
-    coachFields.assignedButton,
-    shouldOpen ? "Atanmış Üyeleri Gizle" : `Atanmış Üyeleri Göster (${currentCoachMembers.length})`,
-  );
-});
+if (coachFields.assignedButton) {
+  coachFields.assignedButton.addEventListener("click", () => {
+    if (!coachFields.assignedCard) return;
+    const shouldOpen = coachFields.assignedCard.classList.contains("is-hidden");
+    coachFields.assignedCard.classList.toggle("is-hidden", !shouldOpen);
+    setText(
+      coachFields.assignedButton,
+      shouldOpen ? "Atanmış Üyeleri Gizle" : `Atanmış Üyeleri Göster (${currentCoachMembers.length})`,
+    );
+  });
+}
 
 modalCloseButton.addEventListener("click", () => closeModal(loginModal));
 newPurchaseButton.addEventListener("click", () => openModal(purchaseModal));
@@ -737,6 +743,37 @@ roleCards.forEach((card) => {
     card.classList.add("active");
     setText(loginTitle, selectedRole === "coach" ? "Hoca Girişi" : "Üye Girişi");
     setText(loginMessage, "");
+    // Update login input hints/placeholders depending on role
+    try {
+      const usernameInput = loginForm.querySelector('input[name="username"]');
+      const passwordInput = loginForm.querySelector('input[name="password"]');
+      const usernameHint = document.getElementById("login-username-hint");
+
+      if (selectedRole === "coach") {
+        if (usernameInput) {
+          usernameInput.placeholder = "Hoca ID (sayı)";
+
+
+          
+          usernameInput.value = "";
+          usernameInput.autocomplete = "username";
+        }
+        if (passwordInput) passwordInput.placeholder = "Hoca şifresi";
+        if (usernameHint) usernameHint.textContent = "Hoca ID (per_id) ve şifresi ile giriş yapın.";
+      } else {
+        if (usernameInput) {
+          usernameInput.placeholder = "Telefon veya kullanıcı adı";
+          usernameInput.value = "";
+          usernameInput.autocomplete = "username";
+        }
+        if (passwordInput) passwordInput.placeholder = "Şifre";
+        if (usernameHint) usernameHint.textContent = "Telefon numarası veya üye kullanıcı adı ile giriş yapın.";
+      }
+
+    } catch (err) {
+      // ignore
+    }
+
     showModalStep("login");
   });
 });

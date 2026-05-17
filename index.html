@@ -215,21 +215,7 @@
         </div>
 
         <div class="coach-grid">
-          <article class="coach-card is-hidden" id="assigned-members-card">
-            <div class="section-head compact">
-              <div>
-                <h2>Atanmış Üyeler</h2>
-                <p>
-                  <code>antrenman_programi.uyeid</code> ve
-                  <code>per-id</code> ilişkisine göre listelenir.
-                </p>
-              </div>
-              <span class="status muted" id="assigned-count">0 üye</span>
-            </div>
-            <div class="coach-member-list" id="assigned-members-list">
-              <p class="empty-state">Girişten sonra üyeler listelenir.</p>
-            </div>
-          </article>
+          <!-- Assigned members list removed per UX change; program write moved to Gelişim Takibi -->
 
           <article class="coach-card coach-card-wide">
             <div class="section-head compact">
@@ -307,16 +293,19 @@
               <input
                 type="text"
                 name="username"
-                value="533"
+                placeholder="Telefon veya kullanıcı adı"
                 autocomplete="username"
               />
+              <small id="login-username-hint" class="form-hint"
+                >Telefon veya kullanıcı adı ile giriş yapın.</small
+              >
             </label>
             <label>
               Şifre
               <input
                 type="password"
                 name="password"
-                value="12345"
+                placeholder="Şifre"
                 autocomplete="current-password"
               />
             </label>

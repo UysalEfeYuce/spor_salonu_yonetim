@@ -12,6 +12,7 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "mysql2": "^3.11.5",
-    "sql-escaper": "^1.3.3"
+    "sql-escaper": "^1.3.3",
+    "bcryptjs": "^2.4.3"
   }
 }
