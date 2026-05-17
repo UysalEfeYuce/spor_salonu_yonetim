@@ -89,11 +89,11 @@ CREATE TABLE IF NOT EXISTS vucut_olculeri (
 -- ==========================================
 
 -- Tablo şemasına uygun sütun isimleriyle veri ekleme:
-INSERT IGNORE INTO uyeler (uyeid, ad, telno)
+INSERT IGNORE INTO uyeler (uyeid, ad, telno, sifre)
 VALUES
-  (1, 'Gurkan Isik', '05551112233'),
-  (2, 'Uysal Efe Yuce', '05442223344'),
-  (3, 'Ayse Kaya', '05329998877');
+  (1, 'Gurkan Isik', '05551112233', '1234'),
+  (2, 'Uysal Efe Yuce', '05442223344', '1234'),
+  (3, 'Ayse Kaya', '05329998877', '1234');
 
 INSERT IGNORE INTO personel (per_id, ad, maas)
 VALUES

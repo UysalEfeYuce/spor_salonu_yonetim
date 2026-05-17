@@ -279,6 +279,7 @@ memberForm.addEventListener("submit", (event) => {
   submitForm(memberForm, "/api/admin/members", (form) => ({
     name: form.get("name"),
     phone: form.get("phone"),
+    password: form.get("password"),
     staffId: form.get("staffId"),
     startDate: form.get("startDate"),
     endDate: form.get("endDate"),

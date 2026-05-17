@@ -214,10 +214,13 @@ app.post("/api/login", async (req, res) => {
 
   const normalizedPhone = String(username || "").replace(/\D/g, "");
   const [[member]] = await pool.query(
-    "SELECT uyeid AS id FROM uyeler WHERE REPLACE(REPLACE(telno, ' ', ''), '-', '') = ? OR telno = ? LIMIT 1",
+    "SELECT uyeid AS id, sifre FROM uyeler WHERE REPLACE(REPLACE(telno, ' ', ''), '-', '') = ? OR telno = ? LIMIT 1",
     [normalizedPhone, username],
   );
   if (!member) return res.status(401).json({ message: "Uye bulunamadi." });
+  if (String(password || "").trim() !== String(member.sifre || "").trim()) {
+    return res.status(401).json({ message: "Uye sifresi hatali." });
+  }
   res.json(await getMemberPayload(member.id));
 });
 
@@ -283,12 +286,17 @@ app.get("/api/admin/data", async (req, res) => {
 });
 
 app.post("/api/admin/members", async (req, res) => {
-  const { name, phone, startDate, endDate, staffId } = req.body;
+  const { name, phone, password, startDate, endDate, staffId } = req.body;
+  if (!password) return res.status(400).json({ message: "Uye sifresi gerekli." });
   const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
-    const [result] = await connection.query("INSERT INTO uyeler (ad, telno) VALUES (?, ?)", [name, phone]);
+    const [result] = await connection.query("INSERT INTO uyeler (ad, telno, sifre) VALUES (?, ?, ?)", [
+      name,
+      phone,
+      String(password),
+    ]);
     await connection.query(
       "INSERT INTO uyelik_takibi (uyeid, baslangictarihi, bitistarihi) VALUES (?, ?, ?)",
       [result.insertId, startDate, endDate],
