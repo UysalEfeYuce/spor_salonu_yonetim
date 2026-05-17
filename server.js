@@ -204,7 +204,7 @@ app.post("/api/login", async (req, res) => {
       [id],
     );
 
-    if (!coach) return res.status(401).json({ message: "Hoca bulunamadi." });
+    if (!coach) return res.status(401).json({ message: "Hoca bulunamadı." });
 
     const stored = (coach.sifre ?? "").toString().trim();
     if (String(password).trim() !== stored) return res.status(401).json({ message: "Kimlik doğrulama başarısız." });
@@ -217,9 +217,9 @@ app.post("/api/login", async (req, res) => {
     "SELECT uyeid AS id, sifre FROM uyeler WHERE REPLACE(REPLACE(telno, ' ', ''), '-', '') = ? OR telno = ? LIMIT 1",
     [normalizedPhone, username],
   );
-  if (!member) return res.status(401).json({ message: "Uye bulunamadi." });
+  if (!member) return res.status(401).json({ message: "Üye bulunamadı." });
   if (String(password || "").trim() !== String(member.sifre || "").trim()) {
-    return res.status(401).json({ message: "Uye sifresi hatali." });
+    return res.status(401).json({ message: "Üye şifresi hatalı." });
   }
   res.json(await getMemberPayload(member.id));
 });
@@ -228,7 +228,7 @@ app.post("/api/admin/login", async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({ message: "Admin kullanici adi ve sifre gerekli." });
+    return res.status(400).json({ message: "Admin kullanıcı adı ve şifre gerekli." });
   }
 
   const [[admin]] = await pool.query(
@@ -236,10 +236,10 @@ app.post("/api/admin/login", async (req, res) => {
     [String(username).trim()],
   );
 
-  if (!admin) return res.status(401).json({ message: "Admin bulunamadi." });
+  if (!admin) return res.status(401).json({ message: "Admin bulunamadı." });
 
   if (String(password).trim() !== String(admin.sifre || "").trim()) {
-    return res.status(401).json({ message: "Admin sifresi hatali." });
+    return res.status(401).json({ message: "Admin şifresi hatalı." });
   }
 
   res.json({ ok: true, admin: { id: admin.id, username: admin.username } });
@@ -247,13 +247,13 @@ app.post("/api/admin/login", async (req, res) => {
 
 app.get("/api/members/:id", async (req, res) => {
   const payload = await getMemberPayload(req.params.id);
-  if (!payload) return res.status(404).json({ message: "Uye bulunamadi." });
+  if (!payload) return res.status(404).json({ message: "Üye bulunamadı." });
   res.json(payload);
 });
 
 app.get("/api/coaches/:id", async (req, res) => {
   const payload = await getCoachPayload(req.params.id);
-  if (!payload) return res.status(404).json({ message: "Hoca bulunamadi." });
+  if (!payload) return res.status(404).json({ message: "Hoca bulunamadı." });
   res.json(payload);
 });
 
@@ -287,7 +287,7 @@ app.get("/api/admin/data", async (req, res) => {
 
 app.post("/api/admin/members", async (req, res) => {
   const { name, phone, password, startDate, endDate, staffId } = req.body;
-  if (!password) return res.status(400).json({ message: "Uye sifresi gerekli." });
+  if (!password) return res.status(400).json({ message: "Üye şifresi gerekli." });
   const connection = await pool.getConnection();
 
   try {
@@ -321,7 +321,7 @@ app.post("/api/admin/members", async (req, res) => {
 
 app.post("/api/admin/staff", async (req, res) => {
   const { name, salary, password } = req.body;
-  if (!name) return res.status(400).json({ message: "Personel adi gerekli." });
+  if (!name) return res.status(400).json({ message: "Personel adı gerekli." });
 
   const [[existing]] = await pool.query("SELECT per_id AS id, sifre FROM personel WHERE ad = ? LIMIT 1", [name]);
 
@@ -450,7 +450,7 @@ app.post("/api/admin/sales", async (req, res) => {
 
     if (!product) {
       await connection.rollback();
-      return res.status(404).json({ message: "Urun bulunamadi." });
+      return res.status(404).json({ message: "Ürün bulunamadı." });
     }
 
     if (product.stokmiktari < amount) {
@@ -487,7 +487,7 @@ app.post("/api/purchases", async (req, res) => {
 
     if (!product) {
       await connection.rollback();
-      return res.status(404).json({ message: "Urun bulunamadi." });
+      return res.status(404).json({ message: "Ürün bulunamadı." });
     }
 
     if (product.stokmiktari < amount) {

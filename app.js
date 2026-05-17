@@ -30,7 +30,8 @@ const progressWeightInput = $("#progress-weight-input");
 const progressHeightInput = $("#progress-height-input");
 const progressFatInput = $("#progress-fat-input");
 const progressNoteInput = $("#progress-note-input");
-const openLoginButtons = [$("#open-login-button"), $("#hero-login-button")];
+const topLoginButton = $("#open-login-button");
+const heroLoginButton = $("#hero-login-button");
 const roleCards = $$(".role-card[data-role]");
 const loginForm = $("#login-form");
 const loginTitle = $("#login-title");
@@ -45,7 +46,6 @@ const purchaseProductInput = $("#purchase-product-input");
 const purchaseQuantityInput = $("#purchase-quantity-input");
 const memberPurchasesBody = $("#member-purchases-body");
 const measurementsBody = $("#measurements-body");
-const logoutButtons = $$(".logout-button");
 const loginSubmitButton = loginForm.querySelector('button[type="submit"]');
 const API_URL = "http://localhost:3000";
 const ADMIN_LOGIN_KEY = "sporSalonuAdminLoggedIn";
@@ -279,6 +279,9 @@ function calcRemainingDays(dateStr) {
 function showOnly(panel) {
   [welcomeScreen, memberPanel, coachPanel].forEach((item) => item.classList.add("is-hidden"));
   panel.classList.remove("is-hidden");
+  if (topLoginButton) {
+    topLoginButton.textContent = panel === welcomeScreen ? "Giriş Yap" : "Çıkış Yap";
+  }
 }
 
 function showModalStep(stepName) {
@@ -700,9 +703,16 @@ async function refreshActivePanel() {
   }
 }
 
-openLoginButtons.forEach((button) => {
-  button?.addEventListener("click", openLoginModal);
+topLoginButton?.addEventListener("click", () => {
+  if (!memberPanel.classList.contains("is-hidden") || !coachPanel.classList.contains("is-hidden")) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  openLoginModal();
 });
+
+heroLoginButton?.addEventListener("click", openLoginModal);
 
 if (coachFields.assignedButton) {
   coachFields.assignedButton.addEventListener("click", () => {
@@ -766,12 +776,12 @@ roleCards.forEach((card) => {
 
       if (selectedRole === "admin") {
         if (usernameInput) {
-          usernameInput.placeholder = "Admin kullanici adi";
+          usernameInput.placeholder = "Admin kullanıcı adı";
           usernameInput.value = "";
           usernameInput.autocomplete = "username";
         }
-        if (passwordInput) passwordInput.placeholder = "Admin sifresi";
-        if (usernameHint) usernameHint.textContent = "Admin kullanici adi ve sifresi ile giris yapin.";
+        if (passwordInput) passwordInput.placeholder = "Admin şifresi";
+        if (usernameHint) usernameHint.textContent = "Admin kullanıcı adı ve şifresi ile giriş yapın.";
       } else if (selectedRole === "coach") {
         if (usernameInput) {
           usernameInput.placeholder = "Hoca ID (sayı)";
@@ -821,17 +831,6 @@ loginForm.addEventListener("submit", async (event) => {
   } finally {
     loginSubmitButton.disabled = false;
   }
-});
-
-logoutButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    loginForm.reset();
-    roleCards.forEach((item) => item.classList.remove("active"));
-    selectedRole = "member";
-    currentMemberId = null;
-    resetCoachPanel();
-    showOnly(welcomeScreen);
-  });
 });
 
 resetCoachPanel();

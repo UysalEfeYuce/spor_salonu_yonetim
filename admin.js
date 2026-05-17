@@ -1,8 +1,5 @@
 const $ = (selector) => document.querySelector(selector);
 
-const adminLoginScreen = $("#admin-login-screen");
-const adminLoginForm = $("#admin-login-form");
-const adminLoginMessage = $("#admin-login-message");
 const adminSidebar = $("#admin-sidebar");
 const adminApp = $("#admin-app");
 const adminLogoutButton = $("#admin-logout-button");
@@ -61,11 +58,11 @@ async function api(path, options = {}) {
     return data;
   } catch (error) {
     if (error instanceof SyntaxError) {
-      throw new Error("Backend eski cevap dondu. Terminalde npm start'i kapatip tekrar ac.");
+      throw new Error("Backend eski cevap döndü. Terminalde npm start'i kapatıp tekrar aç.");
     }
 
     if (error instanceof TypeError) {
-      throw new Error("Backend calismiyor. Terminalde npm start komutunu calistir.");
+      throw new Error("Backend çalışmıyor. Terminalde npm start komutunu çalıştır.");
     }
 
     throw error;
@@ -73,15 +70,12 @@ async function api(path, options = {}) {
 }
 
 function showAdminPanel() {
-  adminLoginScreen.classList.add("is-hidden");
   adminSidebar.classList.remove("is-hidden");
   adminApp.classList.remove("is-hidden");
 }
 
-function showAdminLogin() {
-  adminLoginScreen.classList.remove("is-hidden");
-  adminSidebar.classList.add("is-hidden");
-  adminApp.classList.add("is-hidden");
+function goHome() {
+  window.location.href = "index.html";
 }
 
 async function startAdminPanel() {
@@ -148,7 +142,7 @@ async function loadAdminData() {
   summaryValues[0].textContent = summary.memberCount;
   summaryValues[1].textContent = summary.activeMembershipCount;
   summaryValues[2].textContent = summary.staffCount;
-  summaryValues[3].textContent = `${summary.lowStockCount} Urun`;
+  summaryValues[3].textContent = `${summary.lowStockCount} Ürün`;
 
   fillSelect(assignmentMemberSelect, members, (row) => row.name);
   fillSelect(saleMemberSelect, members, (row) => row.name);
@@ -262,7 +256,7 @@ async function submitForm(form, path, getBody) {
     form.reset();
     setDefaultDates();
     await loadAdminData();
-    alert("Islem basarili.");
+    alert("İşlem başarılı.");
   } catch (error) {
     alert(error.message);
   }
@@ -328,37 +322,13 @@ saleForm.addEventListener("submit", (event) => {
   }));
 });
 
-adminLoginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  adminLoginMessage.textContent = "Giris yapiliyor...";
-
-  try {
-    const form = new FormData(adminLoginForm);
-    await api("/api/admin/login", {
-      method: "POST",
-      body: JSON.stringify({
-        username: form.get("username"),
-        password: form.get("password"),
-      }),
-    });
-
-    sessionStorage.setItem(ADMIN_LOGIN_KEY, "1");
-    adminLoginMessage.textContent = "";
-    adminLoginForm.reset();
-    await startAdminPanel();
-  } catch (error) {
-    adminLoginMessage.textContent = error.message;
-  }
-});
-
 adminLogoutButton.addEventListener("click", () => {
   sessionStorage.removeItem(ADMIN_LOGIN_KEY);
-  showAdminLogin();
+  goHome();
 });
 
 if (sessionStorage.getItem(ADMIN_LOGIN_KEY) === "1") {
   startAdminPanel().catch((error) => alert(error.message));
 } else {
-  showAdminLogin();
-  setDefaultDates();
+  goHome();
 }
