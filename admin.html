@@ -251,7 +251,7 @@
             <input
               type="text"
               name="programDetail"
-              value="Hoca tarafından yazılacak"
+              placeholder="Hoca tarafından yazılacak"
             />
           </label>
           <button class="primary-button" type="submit">Atamayı Kaydet</button>
@@ -351,6 +351,7 @@
                 <th>Fiyat</th>
                 <th>Stok</th>
                 <th>Durum</th>
+                <th>İşlem</th>
               </tr>
             </thead>
             <tbody id="products-table-body">
@@ -361,14 +362,16 @@
                 <td>1.250 TL</td>
                 <td>18</td>
                 <td><span class="status ok">Yeterli</span></td>
+                <td><button class="small-button" type="button">Stok Yenile</button></td>
               </tr>
               <tr class="low-stock">
                 <td>2</td>
                 <td>Kreatin</td>
                 <td>Supplement</td>
                 <td>650 TL</td>
-                <td>4</td>
-                <td><span class="status danger">Azaldı</span></td>
+                <td>0</td>
+                <td><span class="status danger">Bitti</span></td>
+                <td><button class="small-button" type="button">Stok Yenile</button></td>
               </tr>
               <tr>
                 <td>3</td>
@@ -377,6 +380,7 @@
                 <td>180 TL</td>
                 <td>12</td>
                 <td><span class="status ok">Yeterli</span></td>
+                <td><button class="small-button" type="button">Stok Yenile</button></td>
               </tr>
             </tbody>
           </table>

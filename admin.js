@@ -130,9 +130,39 @@ function renderProducts(rows) {
       <td>${row.category}</td>
       <td>${formatMoney(row.price)}</td>
       <td>${row.stock}</td>
-      <td><span class="status ${Number(row.stock) <= 5 ? "danger" : "ok"}">${Number(row.stock) <= 5 ? "Azaldi" : "Yeterli"}</span></td>
+      <td><span class="status ${Number(row.stock) <= 5 ? "danger" : "ok"}">${Number(row.stock) === 0 ? "Bitti" : Number(row.stock) <= 5 ? "Azaldı" : "Yeterli"}</span></td>
+      <td><button class="small-button restock-product" data-product-id="${row.id}" data-product-name="${row.name}">Stok Yenile</button></td>
     </tr>
   `).join("");
+}
+
+if (productsTableBody) {
+  productsTableBody.addEventListener("click", async (event) => {
+    const target = event.target;
+    if (!target.classList.contains("restock-product")) return;
+
+    const productId = target.dataset.productId;
+    const productName = target.dataset.productName || "ürün";
+    const stockText = prompt(`${productName} için eklenecek stok adedi:`);
+    if (stockText === null) return;
+
+    const amount = Number(stockText);
+    if (!Number.isInteger(amount) || amount <= 0) {
+      alert("Eklenecek stok adedi 1 veya daha büyük tam sayı olmalı.");
+      return;
+    }
+
+    try {
+      await api(`/api/admin/products/${productId}/stock`, {
+        method: "PUT",
+        body: JSON.stringify({ amount }),
+      });
+      await loadAdminData();
+      alert("Stok güncellendi.");
+    } catch (error) {
+      alert(error.message);
+    }
+  });
 }
 
 async function loadAdminData() {

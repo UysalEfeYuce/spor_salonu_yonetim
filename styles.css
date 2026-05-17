@@ -152,6 +152,28 @@ p {
   font-size: 13px;
 }
 
+.small-button {
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.small-button:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.small-button.danger {
+  border-color: var(--soft-red);
+  color: var(--red);
+}
+
 .primary-button.full {
   width: 100%;
 }

@@ -351,6 +351,26 @@ app.post("/api/admin/products", async (req, res) => {
   res.status(201).json({ ok: true, id: result.insertId });
 });
 
+app.put("/api/admin/products/:id/stock", async (req, res) => {
+  const { amount } = req.body;
+  const stockAmount = Number(amount);
+
+  if (!Number.isInteger(stockAmount) || stockAmount <= 0) {
+    return res.status(400).json({ message: "Eklenecek stok adedi 1 veya daha büyük tam sayı olmalı." });
+  }
+
+  const [result] = await pool.query("UPDATE urunler SET stokmiktari = stokmiktari + ? WHERE urun_id = ?", [
+    stockAmount,
+    req.params.id,
+  ]);
+
+  if (result.affectedRows === 0) {
+    return res.status(404).json({ message: "Ürün bulunamadı." });
+  }
+
+  res.json({ ok: true });
+});
+
 app.post("/api/admin/assignments", async (req, res) => {
   const { memberId, staffId, startDate, programDetail } = req.body;
   if (!memberId || !staffId) return res.status(400).json({ message: "memberId ve staffId gerekli." });
