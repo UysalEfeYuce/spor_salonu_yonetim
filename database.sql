@@ -18,7 +18,9 @@ CREATE TABLE IF NOT EXISTS uyeler (
   telno VARCHAR(30) NOT NULL UNIQUE, -- Giriş alanı olduğu için UNIQUE yaptık
   sifre VARCHAR(255) NOT NULL,       -- Hash'lenmiş şifre için (En az 255 karakter)
   saglik_durumu VARCHAR(60) NOT NULL DEFAULT 'yok',
-  saglik_notu TEXT NULL
+  saglik_notu TEXT NULL,
+  hedef VARCHAR(60) NOT NULL DEFAULT 'hacim_kazanma',
+  supplement_onerisi TEXT NULL
 );
 
 -- 2. PERSONEL TABLOSU (Sütun adı 'per_id' olarak senkronize edildi)

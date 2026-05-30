@@ -33,6 +33,7 @@ const memberDetailHealthNote = $("#member-detail-health-note");
 const memberDetailSafety = $("#member-detail-safety");
 const memberDetailProgram = $("#member-detail-program");
 const memberDetailMeasurements = $("#member-detail-measurements");
+const memberDetailGoal = $("#member-detail-goal");
 const summaryValues = document.querySelectorAll(".summary-card strong");
 const API_URL = window.location.port === "3000" ? "" : "http://localhost:3000";
 const ADMIN_LOGIN_KEY = "sporSalonuAdminLoggedIn";
@@ -270,6 +271,13 @@ function openMemberPanel(data) {
   memberDetailRegistered.textContent = data.registered || "-";
   memberDetailMembershipEnd.textContent = data.membership_end || "-";
   memberDetailProgram.textContent = data.program_detail || "-";
+  if (memberDetailGoal) {
+    let goalText = "-";
+    if (data.hedef === "kilo_verme") goalText = "Kilo Verme / Yağ Yakımı";
+    else if (data.hedef === "hacim_kazanma") goalText = "Hacim Kazanma / Bulk";
+    else if (data.hedef === "dayaniklilik") goalText = "Dayanıklılık";
+    memberDetailGoal.textContent = goalText;
+  }
   if (memberDetailHealth) memberDetailHealth.textContent = data.health_status || "Yok";
   if (memberDetailHealthNote) memberDetailHealthNote.textContent = data.health_note || "-";
   if (memberDetailSafety) {
@@ -332,6 +340,7 @@ memberForm.addEventListener("submit", (event) => {
     staffId: form.get("staffId"),
     startDate: form.get("startDate"),
     endDate: form.get("endDate"),
+    goal: form.get("goal"),
     healthStatus: form.get("healthStatus"),
     healthNote: form.get("healthNote"),
   }));

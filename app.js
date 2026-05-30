@@ -338,6 +338,7 @@ function fillMemberPanel(data) {
   if (fields.memberProgramSafety) fields.memberProgramSafety.innerHTML = safetyMarkup(data.safety_warnings);
   renderMemberMeasurements(data.measurements || []);
   renderMemberPurchases(data.purchases || []);
+  initAISupplementStack(data);
 }
 
 function emptyState(message) {
@@ -353,6 +354,125 @@ function safetyMarkup(warnings) {
       ${rows.map((warning) => `<div class="safety-warning">${escapeHtml(warning)}</div>`).join("")}
     </div>
   `;
+}
+
+function initAISupplementStack(data) {
+  const tabs = $$("#ai-goal-tabs .goal-tab");
+  const currentGoal = data.hedef || "hacim_kazanma";
+  
+  tabs.forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.goal === currentGoal);
+  });
+
+  const emptyState = $("#ai-empty-state");
+  const loadingState = $("#ai-loading-state");
+  const contentArea = $("#ai-content-area");
+
+  if (!emptyState || !loadingState || !contentArea) return;
+
+  if (data.supplement_onerisi) {
+    emptyState.classList.add("is-hidden");
+    loadingState.classList.add("is-hidden");
+    contentArea.classList.remove("is-hidden");
+    contentArea.innerHTML = renderMarkdownToHtml(data.supplement_onerisi);
+  } else {
+    emptyState.classList.remove("is-hidden");
+    loadingState.classList.add("is-hidden");
+    contentArea.classList.add("is-hidden");
+    contentArea.innerHTML = "";
+  }
+}
+
+function renderMarkdownToHtml(md) {
+  if (!md) return "";
+
+  let html = escapeHtml(md);
+
+  // Parse Headings
+  html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
+  html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
+  html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
+
+  // Parse Blockquotes
+  html = html.replace(/^&gt;[ \t]*(.*$)/gim, "<blockquote>$1</blockquote>");
+
+  // Parse Bold
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+  // Line-by-line list and table processing
+  const lines = html.split("\n");
+  let inList = false;
+  let inTable = false;
+  let tableHeaderDone = false;
+  let processedLines = [];
+  let tableRows = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim();
+
+    // Table line
+    if (line.startsWith("|")) {
+      if (inList) {
+        processedLines.push("</ul>");
+        inList = false;
+      }
+      inTable = true;
+      
+      const cols = line.split("|").map(c => c.trim()).filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
+      
+      if (line.includes("---")) {
+        continue;
+      }
+
+      if (!tableHeaderDone) {
+        tableRows.push("<thead><tr>" + cols.map(c => `<th>${c}</th>`).join("") + "</tr></thead><tbody>");
+        tableHeaderDone = true;
+      } else {
+        tableRows.push("<tr>" + cols.map(c => `<td>${c}</td>`).join("") + "</tr>");
+      }
+      continue;
+    } else if (inTable) {
+      tableRows.push("</tbody>");
+      processedLines.push("<table>" + tableRows.join("") + "</table>");
+      tableRows = [];
+      inTable = false;
+      tableHeaderDone = false;
+    }
+
+    // List line
+    if (line.startsWith("* ") || line.startsWith("- ")) {
+      if (!inList) {
+        processedLines.push("<ul>");
+        inList = true;
+      }
+      processedLines.push(`<li>${line.substring(2)}</li>`);
+    } else {
+      if (inList) {
+        processedLines.push("</ul>");
+        inList = false;
+      }
+      
+      if (line !== "") {
+        if (line.startsWith("<h") || line.startsWith("<blockquote")) {
+          processedLines.push(line);
+        } else {
+          processedLines.push(`<p>${line}</p>`);
+        }
+      } else {
+        processedLines.push("");
+      }
+    }
+  }
+
+  if (inList) {
+    processedLines.push("</ul>");
+  }
+  if (inTable) {
+    tableRows.push("</tbody>");
+    processedLines.push("<table>" + tableRows.join("") + "</table>");
+  }
+
+  return processedLines.join("\n");
 }
 
 function resetCoachPanel() {
@@ -854,6 +974,64 @@ loginForm.addEventListener("submit", async (event) => {
     loginSubmitButton.disabled = false;
   }
 });
+
+// Goal Selector Tab Event Handler
+document.addEventListener("click", async (event) => {
+  const tab = event.target.closest("#ai-goal-tabs .goal-tab");
+  if (!tab || !currentMemberId) return;
+
+  const selectedGoal = tab.dataset.goal;
+  
+  // Update active styling immediately
+  $$("#ai-goal-tabs .goal-tab").forEach((btn) => {
+    btn.classList.toggle("active", btn === tab);
+  });
+
+  try {
+    await api(`/api/members/${currentMemberId}/goal`, {
+      method: "PUT",
+      body: JSON.stringify({ hedef: selectedGoal }),
+    });
+  } catch (error) {
+    alert("Hedef güncellenemedi: " + error.message);
+  }
+});
+
+// Generate Stack Button Handler
+const aiGenerateBtn = $("#ai-generate-btn");
+if (aiGenerateBtn) {
+  aiGenerateBtn.addEventListener("click", async () => {
+    if (!currentMemberId) return;
+
+    const emptyState = $("#ai-empty-state");
+    const loadingState = $("#ai-loading-state");
+    const contentArea = $("#ai-content-area");
+
+    // Show loading state
+    emptyState.classList.add("is-hidden");
+    contentArea.classList.add("is-hidden");
+    loadingState.classList.remove("is-hidden");
+    aiGenerateBtn.disabled = true;
+
+    try {
+      const data = await api(`/api/members/${currentMemberId}/generate-stack`, {
+        method: "POST"
+      });
+      fillMemberPanel(data);
+    } catch (error) {
+      alert("Öneri oluşturulamadı: " + error.message);
+      // Restore states
+      loadingState.classList.add("is-hidden");
+      if (contentArea.innerHTML) {
+        contentArea.classList.remove("is-hidden");
+      } else {
+        emptyState.classList.remove("is-hidden");
+      }
+    } finally {
+      aiGenerateBtn.disabled = false;
+    }
+  });
+}
 
 resetCoachPanel();
 setInterval(refreshActivePanel, 5000);

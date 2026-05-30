@@ -117,6 +117,14 @@
             <input type="date" name="endDate" required />
           </label>
           <label>
+            Spor Hedefi
+            <select name="goal" required>
+              <option value="hacim_kazanma">Hacim Kazanma / Bulk</option>
+              <option value="kilo_verme">Kilo Verme / Yağ Yakımı</option>
+              <option value="dayaniklilik">Dayanıklılık</option>
+            </select>
+          </label>
+          <label>
             Sağlık / Sakatlık Durumu
             <select name="healthStatus">
               <option value="yok">Yok</option>
@@ -432,6 +440,7 @@
             <strong>Üyelik Bitiş:</strong>
             <span id="member-detail-membership-end">-</span>
           </p>
+          <p><strong>Hedef:</strong> <span id="member-detail-goal">-</span></p>
           <p><strong>Sağlık:</strong> <span id="member-detail-health">-</span></p>
           <p><strong>Sağlık Notu:</strong> <span id="member-detail-health-note">-</span></p>
           <h4>Güvenli Program Uyarısı</h4>
