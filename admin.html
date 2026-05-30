@@ -116,6 +116,26 @@
             Üyelik Bitiş
             <input type="date" name="endDate" required />
           </label>
+          <label>
+            Sağlık / Sakatlık Durumu
+            <select name="healthStatus">
+              <option value="yok">Yok</option>
+              <option value="diz">Diz rahatsızlığı</option>
+              <option value="bel">Bel rahatsızlığı</option>
+              <option value="omuz">Omuz rahatsızlığı</option>
+              <option value="boyun">Boyun rahatsızlığı</option>
+              <option value="kalp_tansiyon">Kalp / tansiyon problemi</option>
+              <option value="diger">Diğer</option>
+            </select>
+          </label>
+          <label>
+            Sağlık Notu
+            <textarea
+              name="healthNote"
+              rows="3"
+              placeholder="Örn. Sağ dizde eski sakatlık var"
+            ></textarea>
+          </label>
           <button class="primary-button" type="submit">Üyeyi Kaydet</button>
         </form>
 
@@ -135,6 +155,7 @@
                 <th>Ad</th>
                 <th>Telefon</th>
                 <th>Hoca</th>
+                <th>Sağlık</th>
                 <th>İşlemler</th>
               </tr>
             </thead>
@@ -411,6 +432,10 @@
             <strong>Üyelik Bitiş:</strong>
             <span id="member-detail-membership-end">-</span>
           </p>
+          <p><strong>Sağlık:</strong> <span id="member-detail-health">-</span></p>
+          <p><strong>Sağlık Notu:</strong> <span id="member-detail-health-note">-</span></p>
+          <h4>Güvenli Program Uyarısı</h4>
+          <div id="member-detail-safety">-</div>
           <h4>Program Detayı</h4>
           <pre id="member-detail-program" class="program-pre">-</pre>
           <h4>Son Ölçümler</h4>

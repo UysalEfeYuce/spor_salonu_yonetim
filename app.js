@@ -56,6 +56,8 @@ const fields = {
   memberId: $("#member-id"),
   fullName: $("#member-fullname"),
   phone: $("#member-phone"),
+  healthStatus: $("#member-health-status"),
+  healthNote: $("#member-health-note"),
   registered: $("#member-registered"),
   membershipPackage: $("#membership-package"),
   membershipEnd: $("#membership-end"),
@@ -67,6 +69,7 @@ const fields = {
   totalSpending: $("#total-spending"),
   memberProgramTitle: $("#member-program-title"),
   memberProgramDetail: $("#member-program-detail"),
+  memberProgramSafety: $("#member-program-safety"),
 };
 
 const coachFields = {
@@ -318,6 +321,8 @@ function fillMemberPanel(data) {
   setText(fields.memberId, data.member_id || "-");
   setText(fields.fullName, data.full_name || data.name || "-");
   setText(fields.phone, data.phone || "-");
+  setText(fields.healthStatus, data.health_status || "Yok");
+  setText(fields.healthNote, data.health_note || "-");
   setText(fields.registered, data.registered || "-");
   setText(fields.membershipPackage, data.membership_package || "-");
   setText(fields.membershipEnd, data.membership_end || "-");
@@ -330,12 +335,24 @@ function fillMemberPanel(data) {
   memberTotalSpending = parseMoney(data.total_spending);
   setText(fields.memberProgramTitle, data.program_name || "Program Detayı");
   setText(fields.memberProgramDetail, data.program_detail || "Hoca tarafından yazılan program burada görünür.");
+  if (fields.memberProgramSafety) fields.memberProgramSafety.innerHTML = safetyMarkup(data.safety_warnings);
   renderMemberMeasurements(data.measurements || []);
   renderMemberPurchases(data.purchases || []);
 }
 
 function emptyState(message) {
   return `<p class="empty-state">${escapeHtml(message)}</p>`;
+}
+
+function safetyMarkup(warnings) {
+  const rows = Array.isArray(warnings) ? warnings.filter(Boolean) : [];
+  if (!rows.length) return "";
+
+  return `
+    <div class="safety-warning-list">
+      ${rows.map((warning) => `<div class="safety-warning">${escapeHtml(warning)}</div>`).join("")}
+    </div>
+  `;
 }
 
 function resetCoachPanel() {
@@ -456,6 +473,7 @@ function renderProgramDetail(member) {
           <dd>${escapeHtml(program.date || "-")}</dd>
         </div>
       </dl>
+      ${safetyMarkup(program.safety_warnings)}
       <p>${escapeHtml(program.details || "Program detayı girilmemiş.")}</p>
     </section>
   `).join("");
@@ -468,6 +486,9 @@ function openProgramForm(member) {
   const latestProgram = Array.isArray(member.programs) && member.programs.length ? member.programs[0] : {};
 
   setText(programFormSubtitle, `${member.name || "Üye"} için program detayı gir.`);
+  if (Array.isArray(member.safety_warnings) && member.safety_warnings.length) {
+    setText(programFormSubtitle, `${member.name || "Üye"} için program yaz. ${member.safety_warnings[0]}`);
+  }
   programTitleInput.value = latestProgram.title || "";
   programDateInput.value = displayDateToInput(latestProgram.date);
   programDetailInput.value = latestProgram.details || "";
@@ -592,13 +613,14 @@ function renderCoachMembers(members) {
   members.forEach((member) => {
     const latestProgram = Array.isArray(member.programs) && member.programs.length ? member.programs[0] : null;
     const latestProgress = Array.isArray(member.progress) && member.progress.length ? member.progress[0] : null;
+    const healthSummary = member.health_status && member.health_status !== "Yok" ? member.health_status : "";
 
     const item = document.createElement("div");
     item.className = "coach-member-item";
     item.innerHTML = `
       <div>
         <h3>${escapeHtml(member.name || "Üye")}</h3>
-        <small>${escapeHtml(latestProgram?.title || "Program bekliyor")}</small>
+        <small>${escapeHtml(healthSummary ? `${healthSummary} - ${latestProgram?.title || "Program bekliyor"}` : latestProgram?.title || "Program bekliyor")}</small>
       </div>
       <div class="item-actions">
         <button class="outline-button small" type="button" data-action="show-program">Göster</button>
@@ -614,7 +636,7 @@ function renderCoachMembers(members) {
     progressItem.innerHTML = `
       <div>
         <strong>${escapeHtml(member.name || "Üye")}</strong>
-        <small>${escapeHtml(latestProgress ? `${withUnit(latestProgress.weight, "kg")} - ${latestProgress.date}` : "Ölçüm yok")}</small>
+        <small>${escapeHtml(healthSummary || (latestProgress ? `${withUnit(latestProgress.weight, "kg")} - ${latestProgress.date}` : "Ölçüm yok"))}</small>
       </div>
       <div class="item-actions">
         <button class="outline-button small" type="button" data-action="show-progress">Göster</button>

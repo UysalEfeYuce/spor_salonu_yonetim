@@ -46,9 +46,104 @@ function initials(name) {
     .toUpperCase();
 }
 
+const HEALTH_LABELS = {
+  yok: "Yok",
+  diz: "Diz rahatsızlığı",
+  bel: "Bel rahatsızlığı",
+  omuz: "Omuz rahatsızlığı",
+  boyun: "Boyun rahatsızlığı",
+  kalp_tansiyon: "Kalp / tansiyon problemi",
+  diger: "Diğer",
+};
+
+const HEALTH_RULES = {
+  diz: {
+    keywords: ["squat", "leg press", "lunge", "kosu", "koşu", "bacak"],
+    warning: "Diz rahatsizligi kaydi var. Squat, kosu, lunge ve agir bacak hareketlerinde antrenor kontrolu onerilir.",
+  },
+  bel: {
+    keywords: ["deadlift", "squat", "row", "barbell row", "bel", "agirlik", "ağırlık"],
+    warning: "Bel rahatsizligi kaydi var. Deadlift, agir squat ve bel yuk bindiren hareketlerde dikkat edilmeli.",
+  },
+  omuz: {
+    keywords: ["bench press", "shoulder press", "overhead", "omuz", "military press"],
+    warning: "Omuz rahatsizligi kaydi var. Press ve bas ustu hareketlerde dikkat edilmeli.",
+  },
+  boyun: {
+    keywords: ["shrug", "neck", "boyun", "trapez"],
+    warning: "Boyun rahatsizligi kaydi var. Boyun ve trapez yuklenmelerinde kontrollu program onerilir.",
+  },
+  kalp_tansiyon: {
+    keywords: ["hiit", "kardiyo", "kosu", "koşu", "interval"],
+    warning: "Kalp veya tansiyon problemi kaydi var. Yuksek tempolu kardiyo icin onay ve kontrollu takip onerilir.",
+  },
+};
+
+let schemaReadyPromise;
+
+function normalizeHealthStatus(value) {
+  const key = String(value || "yok").trim().toLowerCase();
+  const labelKey = Object.entries(HEALTH_LABELS).find(([, label]) => label.toLowerCase() === key)?.[0];
+  if (labelKey) return labelKey;
+  return HEALTH_LABELS[key] ? key : "diger";
+}
+
+function healthLabel(value) {
+  return HEALTH_LABELS[normalizeHealthStatus(value)] || HEALTH_LABELS.yok;
+}
+
+function buildSafetyWarnings(status, note, programText) {
+  const key = normalizeHealthStatus(status);
+  if (key === "yok") return [];
+
+  const text = `${programText || ""} ${note || ""}`.toLowerCase();
+  const rule = HEALTH_RULES[key];
+  const warnings = [];
+
+  const hasProgramText = programText && !String(programText).toLowerCase().includes("yazilacak");
+
+  if (!hasProgramText) {
+    warnings.push(`${healthLabel(key)} kaydi var. Program yazilirken bu bilgi dikkate alinmali.`);
+  } else if (!rule || rule.keywords.some((keyword) => text.includes(keyword))) {
+    warnings.push(rule ? rule.warning : "Uyenin saglik notu var. Program antrenor kontroluyle yazilmali.");
+  }
+
+  if (note && String(note).trim()) {
+    warnings.push(`Saglik notu: ${String(note).trim()}`);
+  }
+
+  return warnings;
+}
+
+async function ensureMemberHealthColumns() {
+  const [statusColumns] = await pool.query("SHOW COLUMNS FROM uyeler LIKE 'saglik_durumu'");
+  if (!statusColumns.length) {
+    await pool.query("ALTER TABLE uyeler ADD COLUMN saglik_durumu VARCHAR(60) NOT NULL DEFAULT 'yok'");
+  }
+
+  const [noteColumns] = await pool.query("SHOW COLUMNS FROM uyeler LIKE 'saglik_notu'");
+  if (!noteColumns.length) {
+    await pool.query("ALTER TABLE uyeler ADD COLUMN saglik_notu TEXT NULL");
+  }
+}
+
+function ensureSchema() {
+  if (!schemaReadyPromise) {
+    schemaReadyPromise = ensureMemberHealthColumns().catch((error) => {
+      schemaReadyPromise = null;
+      throw error;
+    });
+  }
+
+  return schemaReadyPromise;
+}
+
 async function getMemberPayload(memberId) {
+  await ensureSchema();
+
   const [[member]] = await pool.query(
-    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone, ut.baslangictarihi, ut.bitistarihi,
+    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone, u.saglik_durumu AS healthStatus,
+      u.saglik_notu AS healthNote, ut.baslangictarihi, ut.bitistarihi,
       ap.program_detayi AS programDetail, ap.baslangic_tarihi AS programDate, p.ad AS coach,
       COALESCE(SUM(s.adet * ur.fiyat), 0) AS totalSpending
     FROM uyeler u
@@ -95,11 +190,14 @@ async function getMemberPayload(memberId) {
     member_id: member.id,
     full_name: member.name,
     phone: member.phone,
+    health_status: healthLabel(member.healthStatus),
+    health_note: member.healthNote || "",
     registered: trDate(member.baslangictarihi),
     membership_package: "Standart",
     membership_end: trDate(member.bitistarihi),
     program_name: member.programDetail ? "Antrenman Programi" : "-",
     program_detail: member.programDetail || "",
+    safety_warnings: buildSafetyWarnings(member.healthStatus, member.healthNote, member.programDetail),
     coach: member.coach || "-",
     total_spending: money(member.totalSpending),
     measurements: measurements.map((row) => ({
@@ -120,11 +218,14 @@ async function getMemberPayload(memberId) {
 }
 
 async function getCoachPayload(coachId) {
+  await ensureSchema();
+
   const [[coach]] = await pool.query("SELECT per_id AS id, ad AS name FROM personel WHERE per_id = ?", [coachId]);
   if (!coach) return null;
 
   const [members] = await pool.query(
-    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone
+    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone, u.saglik_durumu AS healthStatus,
+      u.saglik_notu AS healthNote
     FROM uyeler u
     WHERE (
       SELECT ap2.personelid FROM antrenman_programi ap2
@@ -158,12 +259,16 @@ async function getCoachPayload(coachId) {
       id: member.id,
       name: member.name,
       phone: member.phone,
+      health_status: healthLabel(member.healthStatus),
+      health_note: member.healthNote || "",
+      safety_warnings: buildSafetyWarnings(member.healthStatus, member.healthNote, programs[0]?.details),
       programs: programs.map((program) => ({
         id: program.id,
         title: "Antrenman Programi",
         details: program.details,
         days: "-",
         date: trDate(program.date),
+        safety_warnings: buildSafetyWarnings(member.healthStatus, member.healthNote, program.details),
       })),
       progress: progress.map((row) => ({
         date: trDate(row.date),
@@ -186,8 +291,12 @@ async function getCoachPayload(coachId) {
 }
 
 app.get("/api/health", async (req, res) => {
-  await pool.query("SELECT 1");
-  res.json({ ok: true, database: process.env.MYSQL_DATABASE || "spor_salonu" });
+  try {
+    await pool.query("SELECT 1");
+    res.json({ ok: true, database: process.env.MYSQL_DATABASE || "spor_salonu" });
+  } catch (error) {
+    res.status(503).json({ ok: false, message: "MySQL baglantisi yok.", database: process.env.MYSQL_DATABASE || "spor_salonu" });
+  }
 });
 
 app.post("/api/login", async (req, res) => {
@@ -258,8 +367,11 @@ app.get("/api/coaches/:id", async (req, res) => {
 });
 
 app.get("/api/admin/data", async (req, res) => {
+  await ensureSchema();
+
   const [members] = await pool.query(
     `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone,
+      u.saglik_durumu AS healthStatus, u.saglik_notu AS healthNote,
       (
         SELECT p.ad FROM antrenman_programi ap
         JOIN personel p ON p.per_id = ap.personelid
@@ -282,20 +394,33 @@ app.get("/api/admin/data", async (req, res) => {
       (SELECT COUNT(*) FROM urunler WHERE stokmiktari <= 5) AS lowStockCount`,
   );
 
-  res.json({ summary, members, staff, products });
+  res.json({
+    summary,
+    members: members.map((member) => ({
+      ...member,
+      healthStatus: healthLabel(member.healthStatus),
+      healthNote: member.healthNote || "",
+    })),
+    staff,
+    products,
+  });
 });
 
 app.post("/api/admin/members", async (req, res) => {
-  const { name, phone, password, startDate, endDate, staffId } = req.body;
+  await ensureSchema();
+
+  const { name, phone, password, startDate, endDate, staffId, healthStatus, healthNote } = req.body;
   if (!password) return res.status(400).json({ message: "Üye şifresi gerekli." });
   const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
-    const [result] = await connection.query("INSERT INTO uyeler (ad, telno, sifre) VALUES (?, ?, ?)", [
+    const [result] = await connection.query("INSERT INTO uyeler (ad, telno, sifre, saglik_durumu, saglik_notu) VALUES (?, ?, ?, ?, ?)", [
       name,
       phone,
       String(password),
+      normalizeHealthStatus(healthStatus),
+      healthNote || null,
     ]);
     await connection.query(
       "INSERT INTO uyelik_takibi (uyeid, baslangictarihi, bitistarihi) VALUES (?, ?, ?)",
@@ -305,7 +430,7 @@ app.post("/api/admin/members", async (req, res) => {
     if (staffId) {
       await connection.query(
         "INSERT INTO antrenman_programi (uyeid, personelid, program_detayi, baslangic_tarihi) VALUES (?, ?, ?, ?)",
-        [result.insertId, staffId, null, startDate],
+        [result.insertId, staffId, "Program hoca tarafindan yazilacak.", startDate],
       );
     }
 
@@ -384,7 +509,7 @@ app.post("/api/admin/assignments", async (req, res) => {
     return res.status(200).json({ ok: true, message: "Aynı hoca zaten atanmış." });
   }
 
-  const detailToUse = programDetail != null && programDetail !== "" ? programDetail : last ? last.program_detayi : null;
+  const detailToUse = programDetail != null && programDetail !== "" ? programDetail : last ? last.program_detayi : "Program hoca tarafindan yazilacak.";
 
   await pool.query(
     "INSERT INTO antrenman_programi (uyeid, personelid, program_detayi, baslangic_tarihi) VALUES (?, ?, ?, ?)",
@@ -428,7 +553,7 @@ app.put("/api/admin/members/:id/coach", async (req, res) => {
     return res.status(200).json({ ok: true, message: "Aynı hoca zaten atanmış." });
   }
 
-  const detailToUse = last ? last.program_detayi : null;
+  const detailToUse = last ? last.program_detayi : "Program hoca tarafindan yazilacak.";
 
   await pool.query(
     "INSERT INTO antrenman_programi (uyeid, personelid, program_detayi, baslangic_tarihi) VALUES (?, ?, ?, NOW())",
