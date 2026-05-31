@@ -17,8 +17,6 @@ CREATE TABLE IF NOT EXISTS uyeler (
   ad VARCHAR(100) NOT NULL,
   telno VARCHAR(30) NOT NULL UNIQUE, -- Giriş alanı olduğu için UNIQUE yaptık
   sifre VARCHAR(255) NOT NULL,       -- Hash'lenmiş şifre için (En az 255 karakter)
-  saglik_durumu VARCHAR(60) NOT NULL DEFAULT 'yok',
-  saglik_notu TEXT NULL,
   hedef VARCHAR(60) NOT NULL DEFAULT 'hacim_kazanma',
   supplement_onerisi TEXT NULL
 );
@@ -93,11 +91,11 @@ CREATE TABLE IF NOT EXISTS vucut_olculeri (
 -- ==========================================
 
 -- Tablo şemasına uygun sütun isimleriyle veri ekleme:
-INSERT IGNORE INTO uyeler (uyeid, ad, telno, sifre, saglik_durumu, saglik_notu)
+INSERT IGNORE INTO uyeler (uyeid, ad, telno, sifre)
 VALUES
-  (1, 'Gurkan Isik', '05551112233', '1234', 'yok', NULL),
-  (2, 'Uysal Efe Yuce', '05442223344', '1234', 'diz', 'Sag dizde eski sakatlik var. Agir bacak hareketlerinde dikkat edilmeli.'),
-  (3, 'Ayse Kaya', '05329998877', '1234', 'bel', 'Bel rahatsizligi nedeniyle deadlift kontrollu uygulanmali.');
+  (1, 'Gurkan Isik', '05551112233', '1234'),
+  (2, 'Uysal Efe Yuce', '05442223344', '1234'),
+  (3, 'Ayse Kaya', '05329998877', '1234');
 
 INSERT IGNORE INTO personel (per_id, ad, maas)
 VALUES

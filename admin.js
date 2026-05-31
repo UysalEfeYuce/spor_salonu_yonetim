@@ -28,9 +28,6 @@ const memberDetailPhone = $("#member-detail-phone");
 const memberDetailCoach = $("#member-detail-coach");
 const memberDetailRegistered = $("#member-detail-registered");
 const memberDetailMembershipEnd = $("#member-detail-membership-end");
-const memberDetailHealth = $("#member-detail-health");
-const memberDetailHealthNote = $("#member-detail-health-note");
-const memberDetailSafety = $("#member-detail-safety");
 const memberDetailProgram = $("#member-detail-program");
 const memberDetailMeasurements = $("#member-detail-measurements");
 const memberDetailGoal = $("#member-detail-goal");
@@ -49,10 +46,6 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
-
-function healthClass(value) {
-  return value && value !== "Yok" ? "warning" : "ok";
 }
 
 function today() {
@@ -212,7 +205,6 @@ function renderMembers(rows) {
         <td class="member-name">${row.name}</td>
         <td>${row.phone || "-"}</td>
         <td>${row.coach || "-"}</td>
-        <td><span class="status ${healthClass(row.healthStatus)}">${escapeHtml(row.healthStatus || "Yok")}</span></td>
         <td>
           <button class="small-button view-member" data-member-id="${row.id}">Detay</button>
           <button class="small-button danger delete-member" data-member-id="${row.id}">Sil</button>
@@ -278,15 +270,6 @@ function openMemberPanel(data) {
     else if (data.hedef === "dayaniklilik") goalText = "Dayanıklılık";
     memberDetailGoal.textContent = goalText;
   }
-  if (memberDetailHealth) memberDetailHealth.textContent = data.health_status || "Yok";
-  if (memberDetailHealthNote) memberDetailHealthNote.textContent = data.health_note || "-";
-  if (memberDetailSafety) {
-    const warnings = Array.isArray(data.safety_warnings) ? data.safety_warnings : [];
-    memberDetailSafety.innerHTML = warnings.length
-      ? warnings.map((warning) => `<div class="safety-warning">${escapeHtml(warning)}</div>`).join("")
-      : '<div class="safety-ok">Riskli hareket uyarısı yok.</div>';
-  }
-
   if (Array.isArray(data.measurements) && data.measurements.length) {
     memberDetailMeasurements.innerHTML = data.measurements
       .map((m) => `<div class="measurement"><strong>${m.date}</strong>: ${m.weight || "-"}kg, ${m.height || "-"}cm, Yağ ${m.body_fat || "-"}%</div>`)
@@ -341,8 +324,6 @@ memberForm.addEventListener("submit", (event) => {
     startDate: form.get("startDate"),
     endDate: form.get("endDate"),
     goal: form.get("goal"),
-    healthStatus: form.get("healthStatus"),
-    healthNote: form.get("healthNote"),
   }));
 });
 

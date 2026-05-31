@@ -46,86 +46,7 @@ function initials(name) {
     .toUpperCase();
 }
 
-const HEALTH_LABELS = {
-  yok: "Yok",
-  diz: "Diz rahatsızlığı",
-  bel: "Bel rahatsızlığı",
-  omuz: "Omuz rahatsızlığı",
-  boyun: "Boyun rahatsızlığı",
-  kalp_tansiyon: "Kalp / tansiyon problemi",
-  diger: "Diğer",
-};
-
-const HEALTH_RULES = {
-  diz: {
-    keywords: ["squat", "leg press", "lunge", "kosu", "koşu", "bacak"],
-    warning: "Diz rahatsizligi kaydi var. Squat, kosu, lunge ve agir bacak hareketlerinde antrenor kontrolu onerilir.",
-  },
-  bel: {
-    keywords: ["deadlift", "squat", "row", "barbell row", "bel", "agirlik", "ağırlık"],
-    warning: "Bel rahatsizligi kaydi var. Deadlift, agir squat ve bel yuk bindiren hareketlerde dikkat edilmeli.",
-  },
-  omuz: {
-    keywords: ["bench press", "shoulder press", "overhead", "omuz", "military press"],
-    warning: "Omuz rahatsizligi kaydi var. Press ve bas ustu hareketlerde dikkat edilmeli.",
-  },
-  boyun: {
-    keywords: ["shrug", "neck", "boyun", "trapez"],
-    warning: "Boyun rahatsizligi kaydi var. Boyun ve trapez yuklenmelerinde kontrollu program onerilir.",
-  },
-  kalp_tansiyon: {
-    keywords: ["hiit", "kardiyo", "kosu", "koşu", "interval"],
-    warning: "Kalp veya tansiyon problemi kaydi var. Yuksek tempolu kardiyo icin onay ve kontrollu takip onerilir.",
-  },
-};
-
 let schemaReadyPromise;
-
-function normalizeHealthStatus(value) {
-  const key = String(value || "yok").trim().toLowerCase();
-  const labelKey = Object.entries(HEALTH_LABELS).find(([, label]) => label.toLowerCase() === key)?.[0];
-  if (labelKey) return labelKey;
-  return HEALTH_LABELS[key] ? key : "diger";
-}
-
-function healthLabel(value) {
-  return HEALTH_LABELS[normalizeHealthStatus(value)] || HEALTH_LABELS.yok;
-}
-
-function buildSafetyWarnings(status, note, programText) {
-  const key = normalizeHealthStatus(status);
-  if (key === "yok") return [];
-
-  const text = `${programText || ""} ${note || ""}`.toLowerCase();
-  const rule = HEALTH_RULES[key];
-  const warnings = [];
-
-  const hasProgramText = programText && !String(programText).toLowerCase().includes("yazilacak");
-
-  if (!hasProgramText) {
-    warnings.push(`${healthLabel(key)} kaydi var. Program yazilirken bu bilgi dikkate alinmali.`);
-  } else if (!rule || rule.keywords.some((keyword) => text.includes(keyword))) {
-    warnings.push(rule ? rule.warning : "Uyenin saglik notu var. Program antrenor kontroluyle yazilmali.");
-  }
-
-  if (note && String(note).trim()) {
-    warnings.push(`Saglik notu: ${String(note).trim()}`);
-  }
-
-  return warnings;
-}
-
-async function ensureMemberHealthColumns() {
-  const [statusColumns] = await pool.query("SHOW COLUMNS FROM uyeler LIKE 'saglik_durumu'");
-  if (!statusColumns.length) {
-    await pool.query("ALTER TABLE uyeler ADD COLUMN saglik_durumu VARCHAR(60) NOT NULL DEFAULT 'yok'");
-  }
-
-  const [noteColumns] = await pool.query("SHOW COLUMNS FROM uyeler LIKE 'saglik_notu'");
-  if (!noteColumns.length) {
-    await pool.query("ALTER TABLE uyeler ADD COLUMN saglik_notu TEXT NULL");
-  }
-}
 
 async function ensureMemberAIColumns() {
   const [hedefColumns] = await pool.query("SHOW COLUMNS FROM uyeler LIKE 'hedef'");
@@ -142,7 +63,6 @@ async function ensureMemberAIColumns() {
 function ensureSchema() {
   if (!schemaReadyPromise) {
     schemaReadyPromise = (async () => {
-      await ensureMemberHealthColumns();
       await ensureMemberAIColumns();
     })().catch((error) => {
       schemaReadyPromise = null;
@@ -157,8 +77,8 @@ async function getMemberPayload(memberId) {
   await ensureSchema();
 
   const [[member]] = await pool.query(
-    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone, u.saglik_durumu AS healthStatus,
-      u.saglik_notu AS healthNote, u.hedef, u.supplement_onerisi, ut.baslangictarihi, ut.bitistarihi,
+    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone,
+      u.hedef, u.supplement_onerisi, ut.baslangictarihi, ut.bitistarihi,
       ap.program_detayi AS programDetail, ap.baslangic_tarihi AS programDate, p.ad AS coach,
       COALESCE(SUM(s.adet * ur.fiyat), 0) AS totalSpending
     FROM uyeler u
@@ -205,8 +125,6 @@ async function getMemberPayload(memberId) {
     member_id: member.id,
     full_name: member.name,
     phone: member.phone,
-    health_status: healthLabel(member.healthStatus),
-    health_note: member.healthNote || "",
     hedef: member.hedef,
     supplement_onerisi: member.supplement_onerisi || "",
     registered: trDate(member.baslangictarihi),
@@ -214,7 +132,6 @@ async function getMemberPayload(memberId) {
     membership_end: trDate(member.bitistarihi),
     program_name: member.programDetail ? "Antrenman Programi" : "-",
     program_detail: member.programDetail || "",
-    safety_warnings: buildSafetyWarnings(member.healthStatus, member.healthNote, member.programDetail),
     coach: member.coach || "-",
     total_spending: money(member.totalSpending),
     measurements: measurements.map((row) => ({
@@ -241,8 +158,7 @@ async function getCoachPayload(coachId) {
   if (!coach) return null;
 
   const [members] = await pool.query(
-    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone, u.saglik_durumu AS healthStatus,
-      u.saglik_notu AS healthNote, u.hedef
+    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone, u.hedef
     FROM uyeler u
     WHERE (
       SELECT ap2.personelid FROM antrenman_programi ap2
@@ -276,17 +192,13 @@ async function getCoachPayload(coachId) {
       id: member.id,
       name: member.name,
       phone: member.phone,
-      health_status: healthLabel(member.healthStatus),
-      health_note: member.healthNote || "",
       hedef: member.hedef,
-      safety_warnings: buildSafetyWarnings(member.healthStatus, member.healthNote, programs[0]?.details),
       programs: programs.map((program) => ({
         id: program.id,
         title: "Antrenman Programi",
         details: program.details,
         days: "-",
         date: trDate(program.date),
-        safety_warnings: buildSafetyWarnings(member.healthStatus, member.healthNote, program.details),
       })),
       progress: progress.map((row) => ({
         date: trDate(row.date),
@@ -388,8 +300,7 @@ app.get("/api/admin/data", async (req, res) => {
   await ensureSchema();
 
   const [members] = await pool.query(
-    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone,
-      u.saglik_durumu AS healthStatus, u.saglik_notu AS healthNote, u.hedef,
+    `SELECT u.uyeid AS id, u.ad AS name, u.telno AS phone, u.hedef,
       (
         SELECT p.ad FROM antrenman_programi ap
         JOIN personel p ON p.per_id = ap.personelid
@@ -412,33 +323,22 @@ app.get("/api/admin/data", async (req, res) => {
       (SELECT COUNT(*) FROM urunler WHERE stokmiktari <= 5) AS lowStockCount`,
   );
 
-  res.json({
-    summary,
-    members: members.map((member) => ({
-      ...member,
-      healthStatus: healthLabel(member.healthStatus),
-      healthNote: member.healthNote || "",
-    })),
-    staff,
-    products,
-  });
+  res.json({ summary, members, staff, products });
 });
 
 app.post("/api/admin/members", async (req, res) => {
   await ensureSchema();
 
-  const { name, phone, password, startDate, endDate, staffId, healthStatus, healthNote, goal } = req.body;
+  const { name, phone, password, startDate, endDate, staffId, goal } = req.body;
   if (!password) return res.status(400).json({ message: "Üye şifresi gerekli." });
   const connection = await pool.getConnection();
 
   try {
     await connection.beginTransaction();
-    const [result] = await connection.query("INSERT INTO uyeler (ad, telno, sifre, saglik_durumu, saglik_notu, hedef) VALUES (?, ?, ?, ?, ?, ?)", [
+    const [result] = await connection.query("INSERT INTO uyeler (ad, telno, sifre, hedef) VALUES (?, ?, ?, ?)", [
       name,
       phone,
       String(password),
-      normalizeHealthStatus(healthStatus),
-      healthNote || null,
       goal || "hacim_kazanma",
     ]);
     await connection.query(
@@ -449,7 +349,7 @@ app.post("/api/admin/members", async (req, res) => {
     if (staffId) {
       await connection.query(
         "INSERT INTO antrenman_programi (uyeid, personelid, program_detayi, baslangic_tarihi) VALUES (?, ?, ?, ?)",
-        [result.insertId, staffId, "Program hoca tarafindan yazilacak.", startDate],
+        [result.insertId, staffId, null, startDate],
       );
     }
 
@@ -528,7 +428,7 @@ app.post("/api/admin/assignments", async (req, res) => {
     return res.status(200).json({ ok: true, message: "Aynı hoca zaten atanmış." });
   }
 
-  const detailToUse = programDetail != null && programDetail !== "" ? programDetail : last ? last.program_detayi : "Program hoca tarafindan yazilacak.";
+  const detailToUse = programDetail != null && programDetail !== "" ? programDetail : last ? last.program_detayi : null;
 
   await pool.query(
     "INSERT INTO antrenman_programi (uyeid, personelid, program_detayi, baslangic_tarihi) VALUES (?, ?, ?, ?)",
@@ -572,7 +472,7 @@ app.put("/api/admin/members/:id/coach", async (req, res) => {
     return res.status(200).json({ ok: true, message: "Aynı hoca zaten atanmış." });
   }
 
-  const detailToUse = last ? last.program_detayi : "Program hoca tarafindan yazilacak.";
+  const detailToUse = last ? last.program_detayi : null;
 
   await pool.query(
     "INSERT INTO antrenman_programi (uyeid, personelid, program_detayi, baslangic_tarihi) VALUES (?, ?, ?, NOW())",
@@ -698,7 +598,7 @@ app.post("/api/progress", async (req, res) => {
   res.status(201).json(await getCoachPayload(coachId));
 });
 
-function generateFallbackStack(name, goal, weight, height, bodyFat, healthStatus, healthNote) {
+function generateFallbackStack(name, goal, weight, height, bodyFat) {
   let goalText = "Hacim Kazanma / Bulk";
   if (goal === "kilo_verme") goalText = "Kilo Verme / Yağ Yakımı";
   if (goal === "dayaniklilik") goalText = "Dayanıklılık / Performans";
@@ -708,18 +608,10 @@ function generateFallbackStack(name, goal, weight, height, bodyFat, healthStatus
     statsInfo = `- **Vücut Bilgileri:** ${weight} kg, ${height} cm${bodyFat ? `, %${bodyFat} Yağ Oranı` : ""}\n`;
   }
 
-  let healthWarningText = "";
-  if (healthStatus !== "Yok" || healthNote) {
-    healthWarningText = `⚠️ **Sağlık Durumu Uyarısı:** ${healthStatus} (${healthNote || "Not belirtilmemiş"}). Bu stack bu sağlık koşulları göz önünde bulundurularak optimize edilmiştir.`;
-  }
-
   let stackContent = "";
   if (goal === "kilo_verme") {
     const targetProtein = weight ? Math.round(weight * 1.5) : 100;
-    const isStimulantSafe = !healthStatus.toLowerCase().includes("kalp") && !healthStatus.toLowerCase().includes("tansiyon");
-    const fatBurnerOption = isStimulantSafe 
-      ? `- **Termojenik Yağ Yakıcı / Kafein:** Antrenmandan 30 dk önce 1 porsiyon (enerji artışı ve yağ yakımını hızlandırmak için).`
-      : `- **L-Karnitin (Sıvı):** Antrenmandan 30 dk önce 2000mg (Kardiyovasküler uyarıcı içermez, yağ asitlerinin enerjiye dönüşümünü destekler. Kalp/tansiyon hassasiyetiniz nedeniyle kafeinsiz tercih edilmiştir).`;
+    const fatBurnerOption = `- **Termojenik Yağ Yakıcı / Kafein:** Antrenmandan 30 dk önce 1 porsiyon (enerji artışı ve yağ yakımını hızlandırmak için).`;
 
     stackContent = `
 ### 1. Önerilen Supplementler ve Seçim Nedenleri
@@ -729,7 +621,7 @@ function generateFallbackStack(name, goal, weight, height, bodyFat, healthStatus
 *   **BCAA (2:1:1):** Antrenman sırasında kas yıkımını (katabolizma) önlemek ve toparlanmayı hızlandırmak amacıyla kullanılır.
 ${fatBurnerOption}
 *   **CLA (Konjuge Linoleik Asit):** Öğünlerle birlikte günde 3 defa 1'er kapsül. Bölgesel yağ depolanmasını azaltmaya yardımcı olur.
-${healthNote ? `*   **Destekleyici Tavsiye:** ${healthNote.includes("diz") || healthNote.includes("eklem") ? "Eklem hassasiyetiniz için **Kolajen & Glukozamin** desteği eklenmiştir." : "Genel direnç için **Multivitamin & Omega-3** desteği önerilir."}` : "*   **Omega-3 Yağ Asitleri:** Sağlıklı yağ tüketimi ve metabolizma aktivasyonu için günde 2 kapsül."}
+*   **Omega-3 Yağ Asitleri:** Faydalı yağ desteği ve metabolizma aktivasyonu için günde 2 kapsül.
 
 ### 2. Günlük Kullanım Zamanlaması ve Dozaj Tablosu
 
@@ -737,14 +629,14 @@ ${healthNote ? `*   **Destekleyici Tavsiye:** ${healthNote.includes("diz") || he
 | :--- | :--- | :--- | :--- |
 | **Sabah (Aç Karnına)** | CLA | 1 Kapsül | Yağ Yakımını Tetikleme |
 | **Öğle Yemeği ile** | CLA | 1 Kapsül | Yağ Depolanmasını Engelleme |
-| **Antrenmandan 30 Dk Önce** | ${isStimulantSafe ? "Yağ Yakıcı / Kafein" : "L-Karnitin (Sıvı)"} | 1 Servis | Enerji & Termojenez |
+| **Antrenmandan 30 Dk Önce** | Yağ Yakıcı / Kafein | 1 Servis | Enerji & Termojenez |
 | **Antrenman Sırasında** | BCAA | 1 Ölçek (Suya Karışık) | Kas Koruması |
 | **Antrenman Hemen Sonrası** | Whey Protein (İzole) | 1 Ölçek (300ml Su) | Hızlı Toparlanma & Kas Besleme |
 | **Akşam Yemeği ile** | CLA | 1 Kapsül | Gece Yağ Asidi Oksidasyonu |
 
-### 3. Sağlık ve Güvenlik Uyarıları
+### 3. Kullanım Güvenliği Uyarıları
 
-*   ${healthWarningText || "Bilinen bir sağlık kısıtlamanız bulunmamaktadır. Ancak supplement kullanımında aşırıya kaçmamalı ve vücudunuzu dinlemelisiniz."}
+*   Supplement kullanımında aşırıya kaçmamalı ve vücudunuzu dinlemelisiniz.
 *   **Hidrasyon:** L-Karnitin ve termojeniklerin etkili çalışması ve böbrek sağlığınız için günde en az **3.5 litre su** tüketmeye özen gösterin.
 *   **Beslenme Dengesi:** Supplementler birer takviyedir; hedefinize ulaşmak için protein ağırlıklı kalori açığı diyetinizi sürdürmelisiniz.
 `;
@@ -756,7 +648,7 @@ ${healthNote ? `*   **Destekleyici Tavsiye:** ${healthNote.includes("diz") || he
 *   **Elektrolit Kompleksi:** Uzun süren antrenmanlarda terle kaybedilen sodyum, potasyum ve magnezyumu yerine koyarak krampları önler.
 *   **Kreatin Monohidrat:** ATP (hücresel enerji) depolarını yeniler. Hız, güç ve kısa süreli dayanıklılık patlamaları için kritik rol oynar.
 *   **Whey Protein:** Kas liflerinin antrenman sonrası mikro yırtıklarını onarmak ve toparlanma (recovery) süresini en aza indirmek için gereklidir.
-${healthNote ? `*   **Eklem / Sağlık Notu Tavsiyesi:** ${healthNote.includes("diz") || healthNote.includes("bel") ? "Diz/bel hassasiyetiniz nedeniyle eklem içi sıvı dengesini korumak için günde 1500mg **Glukozamin & Kondroitin** önerilir." : "Kas kasılmalarını düzenlemek ve krampları engellemek için **Magnezyum Bisglisinat** takviyesi önerilir."}` : "*   **Magnezyum & Çinko (ZMA):** Gece yatmadan önce derin uyku fazını artırarak kas dinlenmesini maksimuma çıkarır."}
+*   **Magnezyum & Çinko (ZMA):** Gece yatmadan önce derin uyku fazını artırarak kas dinlenmesini maksimuma çıkarır.
 
 ### 2. Günlük Kullanım Zamanlaması ve Dozaj Tablosu
 
@@ -768,9 +660,9 @@ ${healthNote ? `*   **Eklem / Sağlık Notu Tavsiyesi:** ${healthNote.includes("
 | **Antrenman Hemen Sonrası** | Whey Protein + Karbonhidrat | 1 Ölçek Protein + 30g Karb | Glikojen Depolarını Yenileme & Onarım |
 | **Gece Yatmadan Önce** | Magnezyum (ZMA) | 1 Servis | Kaliteli Uyku & Kas Gevşemesi |
 
-### 3. Sağlık ve Güvenlik Uyarıları
+### 3. Kullanım Güvenliği Uyarıları
 
-*   ${healthWarningText || "Aktif bir kronik rahatsızlık uyarınız bulunmamaktadır. Yoğun dayanıklılık antrenmanlarında kalbinizi aşırı zorlamamaya dikkat edin."}
+*   Yoğun dayanıklılık antrenmanlarında kalbinizi aşırı zorlamamaya dikkat edin.
 *   **Sıvı Tüketimi:** Kreatin ve elektrolitlerin hücre içine su çekmesi sebebiyle günlük su tüketiminizi en az **4 litreye** çıkarın.
 *   **Beslenme Esası:** Dayanıklılık sporcuları için karbonhidrat depoları (glikojen) birincil yakıttır. Yeterli kompleks karbonhidrat tükettiğinizden emin olun.
 `;
@@ -784,21 +676,21 @@ ${healthNote ? `*   **Eklem / Sağlık Notu Tavsiyesi:** ${healthNote.includes("
     *   *Kişisel Doz Hedefi:* Hacim kazanımı sürecinde günde kilo başına 2g protein hedefiyle yaklaşık **${targetProtein}g** protein tüketmelisiniz.
 *   **Karbonhidrat Tozu (Gainer) / Yulaf Unu:** Kalori fazlası oluşturmakta zorlanıyorsanız, günlük kalori ihtiyacınızı sıvı formda temiz karbonhidratlarla tamamlar.
 *   **BCAA (2:1:1) veya EAA:** Protein sentezini (mTOR yolunu) maksimize etmek için antrenman öncesi veya esnasında tüketilmesi önerilir.
-${healthNote ? `*   **Sakatlık Önleme Desteği:** ${healthNote.includes("diz") || healthNote.includes("bel") || healthNote.includes("omuz") ? "Ağır yükler altına gireceğiniz için eklem bağlarını güçlendirmek adına **Tip 1-3 Kollajen & C Vitamini** takviyesi bu kombinasyona eklenmiştir." : "Sindirim sistemini desteklemek için **Probiyotik & Sindirim Enzimleri** desteği önerilir."}` : "*   **Omega-3 & Multivitamin:** Hücre gelişimi, hormon üretimi (özellikle testosteron desteği) ve ağır antrenmanlar sonrası inflamasyonu azaltmak için sabahları 1'er adet."}
+*   **Omega-3 & Multivitamin:** Hücre gelişimi, hormon üretimi (özellikle testosteron desteği) ve ağır antrenmanlar sonrası inflamasyonu azaltmak için sabahları 1'er adet.
 
 ### 2. Günlük Kullanım Zamanlaması ve Dozaj Tablosu
 
 | Zaman dilimi | Supplement | Miktar / Doz | Amacı |
 | :--- | :--- | :--- | :--- |
-| **Sabah Kahvaltısı Sonrası** | Multivitamin & Omega-3 | 1'er Kapsül | Sağlıklı Yağlar & Genel Hücresel Sağlık |
+| **Sabah Kahvaltısı Sonrası** | Multivitamin & Omega-3 | 1'er Kapsül | Yağ Dengesi & Genel Hücresel Destek |
 | **Öğün Aralarında** | Gainer (Karbonhidrat Tozu) | 1 Servis (Yarım Ölçek) | Ekstra Kalori Surplus Sağlama |
 | **Antrenmandan 30 Dk Önce** | BCAA / Pre-Workout | 1 Servis | Enerji & Kas Pompalama (Pump) |
 | **Antrenman Hemen Sonrası** | Whey Protein + Kreatin | 1 Ölçek Protein + 5g Kreatin | Hızlı İnsülin Tepkisi & Hücre Yenilenmesi |
 | **Gece Yatmadan Önce** | Kazein (Yavaş Salınımlı) | 1 Ölçek (veya Süt/Yoğurt) | Gece Boyunca Kas Besleme |
 
-### 3. Sağlık ve Güvenlik Uyarıları
+### 3. Kullanım Güvenliği Uyarıları
 
-*   ${healthWarningText || "Herhangi bir kronik sağlık kısıtlamanız görünmüyor. Hacim kazanma sürecindeki yüksek ağırlık egzersizlerinde doğru form kullanmaya özen gösterin."}
+*   Hacim kazanma sürecindeki yüksek ağırlık egzersizlerinde doğru form kullanmaya özen gösterin.
 *   **Böbrek ve Karaciğer Sağlığı:** Protein ve kreatin süzülmesini kolaylaştırmak amacıyla günde en az **3.5 - 4 litre su** içmelisiniz.
 *   **Beslenme Esası:** Supplementler sadece takviyedir. Kalori fazlası (kalori surplus) oluşturacak şekilde günde 4-5 öğün temiz beslenmeye devam etmelisiniz.
 `;
@@ -839,7 +731,7 @@ app.post("/api/members/:id/generate-stack", async (req, res) => {
 
   try {
     const [[member]] = await pool.query(
-      "SELECT ad, saglik_durumu, saglik_notu, hedef FROM uyeler WHERE uyeid = ?",
+      "SELECT ad, hedef FROM uyeler WHERE uyeid = ?",
       [memberId]
     );
 
@@ -855,8 +747,6 @@ app.post("/api/members/:id/generate-stack", async (req, res) => {
     const weight = measurement ? measurement.kilo : null;
     const height = measurement ? measurement.boy : null;
     const bodyFat = measurement ? measurement.yag_orani : null;
-    const healthStatus = healthLabel(member.saglik_durumu);
-    const healthNote = member.saglik_notu || "";
 
     const apiKey = process.env.GEMINI_API_KEY;
     let generatedMarkdown = "";
@@ -875,14 +765,12 @@ app.post("/api/members/:id/generate-stack", async (req, res) => {
 - Ad Soyad: ${member.ad}
 - Spor Hedefi: ${goalInTurkish}
 - Son Vücut Ölçüleri: Kilo ${weight || "Bilinmiyor"} kg, Boy ${height || "Bilinmiyor"} cm, Yağ Oranı %${bodyFat || "Bilinmiyor"}
-- Sağlık Durumu: ${healthStatus}
-- Sağlık Notu: ${healthNote || "Yok"}
 
 Lütfen bu üye için tamamen kişiselleştirilmiş, bilimsel araştırmalara dayalı, hedefine uygun bir Supplement Kombinasyonu (Stack) ve Detaylı Kullanım Rehberi oluştur.
 Rehber şu bölümleri içermelidir:
 1. Önerilen Supplementler ve Seçim Nedenleri: Hangi supplementler, neden seçildi ve üyenin vücut ölçülerine göre ne işe yarayacak?
 2. Günlük/Haftalık Kullanım Zamanlaması ve Dozaj Tablosu: (Kahvaltı sonrası, antrenman öncesi, antrenman sonrası vb. zamanlar ve miktarlar belirtilerek net bir tablo veya liste şeklinde planla).
-3. Sağlık ve Güvenlik Uyarıları: Üyenin sağlık durumu/notuna göre nelere dikkat etmeli? (Eğer diz sakatlığı, bel sakatlığı, kalp tansiyon durumu varsa bunlara göre ek tavsiyeler veya kaçınılması gereken supplementler varsa belirt. Örneğin kalp/tansiyon sorunu varsa ağır uyarıcı içeren yağ yakıcılardan kaçınmasını söyle).
+3. Kullanım Güvenliği Uyarıları: Supplement kullanımında genel olarak nelere dikkat edilmeli?
 4. Hidrasyon ve Beslenme Tavsiyeleri: Bu stack'in etkisini artıracak su tüketimi ve beslenme ipuçları.
 
 Lütfen yanıtı markdown formatında ver. Yanıt motive edici, profesyonel, anlaşılır ve tamamen Türkçe olsun. En başta üye adına özel bir tebrik/giriş cümlesi kur.`;
@@ -918,9 +806,7 @@ Lütfen yanıtı markdown formatında ver. Yanıt motive edici, profesyonel, anl
         member.hedef,
         weight,
         height,
-        bodyFat,
-        healthStatus,
-        healthNote
+        bodyFat
       );
     }
 
