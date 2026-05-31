@@ -357,13 +357,20 @@ function initAISupplementStack(data) {
     emptyState.classList.add("is-hidden");
     loadingState.classList.add("is-hidden");
     contentArea.classList.remove("is-hidden");
-    contentArea.innerHTML = renderMarkdownToHtml(data.supplement_onerisi);
+    contentArea.innerHTML = renderMarkdownToHtml(cleanSupplementText(data.supplement_onerisi));
   } else {
     emptyState.classList.remove("is-hidden");
     loadingState.classList.add("is-hidden");
     contentArea.classList.add("is-hidden");
     contentArea.innerHTML = "";
   }
+}
+
+function cleanSupplementText(text) {
+  return String(text || "")
+    .replace(/\s*\(Stack\)/gi, "")
+    .replace(/Supplement Kombinasyonu/gi, "Supplement Önerisi")
+    .replace(/\bStack\b/gi, "Öneri");
 }
 
 function renderMarkdownToHtml(md) {
@@ -974,7 +981,7 @@ document.addEventListener("click", async (event) => {
   }
 });
 
-// Generate Stack Button Handler
+// Generate recommendation button handler
 const aiGenerateBtn = $("#ai-generate-btn");
 if (aiGenerateBtn) {
   aiGenerateBtn.addEventListener("click", async () => {

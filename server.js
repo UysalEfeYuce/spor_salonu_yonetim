@@ -608,12 +608,12 @@ function generateFallbackStack(name, goal, weight, height, bodyFat) {
     statsInfo = `- **Vücut Bilgileri:** ${weight} kg, ${height} cm${bodyFat ? `, %${bodyFat} Yağ Oranı` : ""}\n`;
   }
 
-  let stackContent = "";
+  let recommendationContent = "";
   if (goal === "kilo_verme") {
     const targetProtein = weight ? Math.round(weight * 1.5) : 100;
     const fatBurnerOption = `- **Termojenik Yağ Yakıcı / Kafein:** Antrenmandan 30 dk önce 1 porsiyon (enerji artışı ve yağ yakımını hızlandırmak için).`;
 
-    stackContent = `
+    recommendationContent = `
 ### 1. Önerilen Supplementler ve Seçim Nedenleri
 
 *   **Whey Protein Tozu (İzole):** Kalori açığı oluştururken kas kütlenizi korumak için gereklidir. Günlük protein ihtiyacınızı karşılamaya yardımcı olur.
@@ -641,7 +641,7 @@ ${fatBurnerOption}
 *   **Beslenme Dengesi:** Supplementler birer takviyedir; hedefinize ulaşmak için protein ağırlıklı kalori açığı diyetinizi sürdürmelisiniz.
 `;
   } else if (goal === "dayaniklilik") {
-    stackContent = `
+    recommendationContent = `
 ### 1. Önerilen Supplementler ve Seçim Nedenleri
 
 *   **Beta-Alanin:** Kaslardaki laktik asit birikimini geciktirerek yüksek yoğunluklu antrenmanlarda dayanıklılığınızı artırır. İlk kullanımlarda hafif karıncalanma hissi yapabilir, tamamen zararsızdır.
@@ -668,7 +668,7 @@ ${fatBurnerOption}
 `;
   } else {
     const targetProtein = weight ? Math.round(weight * 2.0) : 140;
-    stackContent = `
+    recommendationContent = `
 ### 1. Önerilen Supplementler ve Seçim Nedenleri
 
 *   **Kreatin Monohidrat:** Hücre içi su tutumunu artırarak kasların daha hacimli durmasını sağlar ve patlayıcı gücü yükseltir. Kas kütlesi inşasında en çok araştırılmış ve kanıtlanmış takviyedir.
@@ -696,11 +696,11 @@ ${fatBurnerOption}
 `;
   }
 
-  return `## 🌟 ${name} İçin Yapay Zeka Supplement Kombinasyonu (Stack)
+  return `## 🌟 ${name} İçin Yapay Zeka Supplement Önerisi
 > **Hedef:** ${goalText}
 ${statsInfo}
 ---
-${stackContent}
+${recommendationContent}
 *(Not: Bu tavsiyeler yapay zeka destekli bir simülasyon/analiz sonucudur. Herhangi bir supplement kullanmadan önce hekiminize danışmanız tavsiye edilir.)*`;
 }
 
@@ -766,12 +766,12 @@ app.post("/api/members/:id/generate-stack", async (req, res) => {
 - Spor Hedefi: ${goalInTurkish}
 - Son Vücut Ölçüleri: Kilo ${weight || "Bilinmiyor"} kg, Boy ${height || "Bilinmiyor"} cm, Yağ Oranı %${bodyFat || "Bilinmiyor"}
 
-Lütfen bu üye için tamamen kişiselleştirilmiş, bilimsel araştırmalara dayalı, hedefine uygun bir Supplement Kombinasyonu (Stack) ve Detaylı Kullanım Rehberi oluştur.
+Lütfen bu üye için tamamen kişiselleştirilmiş, bilimsel araştırmalara dayalı, hedefine uygun bir Supplement Önerisi ve Detaylı Kullanım Rehberi oluştur.
 Rehber şu bölümleri içermelidir:
 1. Önerilen Supplementler ve Seçim Nedenleri: Hangi supplementler, neden seçildi ve üyenin vücut ölçülerine göre ne işe yarayacak?
 2. Günlük/Haftalık Kullanım Zamanlaması ve Dozaj Tablosu: (Kahvaltı sonrası, antrenman öncesi, antrenman sonrası vb. zamanlar ve miktarlar belirtilerek net bir tablo veya liste şeklinde planla).
 3. Kullanım Güvenliği Uyarıları: Supplement kullanımında genel olarak nelere dikkat edilmeli?
-4. Hidrasyon ve Beslenme Tavsiyeleri: Bu stack'in etkisini artıracak su tüketimi ve beslenme ipuçları.
+4. Hidrasyon ve Beslenme Tavsiyeleri: Bu önerinin etkisini artıracak su tüketimi ve beslenme ipuçları.
 
 Lütfen yanıtı markdown formatında ver. Yanıt motive edici, profesyonel, anlaşılır ve tamamen Türkçe olsun. En başta üye adına özel bir tebrik/giriş cümlesi kur.`;
 
@@ -814,7 +814,7 @@ Lütfen yanıtı markdown formatında ver. Yanıt motive edici, profesyonel, anl
 
     res.json(await getMemberPayload(memberId));
   } catch (error) {
-    console.error("Supplement stack üretilirken hata:", error);
+    console.error("Supplement önerisi üretilirken hata:", error);
     res.status(500).json({ message: "Supplement önerisi oluşturulurken bir hata oluştu." });
   }
 });
